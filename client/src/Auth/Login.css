@@ -1,0 +1,139 @@
+:root {
+  --green1: #86E7B8;
+  --green2: #93FF96;
+  --green3: #B2FFA8;
+  --yellow: #D0FFB7;
+  --cream: #F2F5DE;
+  --black: #000000;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Manrope', sans-serif;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: url('../assets/VolunteerHome.jpg') center/cover no-repeat; /* hero-style background */
+  position: relative;
+}
+
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5); /* overlay effect */
+}
+
+.login-card {
+  position: relative;
+  background: linear-gradient(135deg, var(--green1), var(--green2));
+  border-radius: 25px;
+  padding: 4rem 3rem;  
+  width: 500px;         
+  height: 650px;        /* taller card */
+  max-width: 90%;
+  text-align: center;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* center content vertically */
+  transition: transform 0.4s, box-shadow 0.4s;
+}
+
+.login-card:hover {
+  transform: translateY(-5px) scale(1.03);
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+}
+
+.login-card h2 {
+  font-family: 'Oswald', sans-serif;
+  font-size: 3rem;
+  margin-bottom: 2rem;
+  color: var(--black);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  width: 80%;   
+}
+
+.login-form input {
+  width: 100%;
+  padding: 0.9rem;      
+  font-size: 1.1rem;
+  border-radius: 12px;
+  border: 2px solid var(--green2);
+  transition: border 0.3s, box-shadow 0.3s;
+}
+
+.login-form input:focus {
+  outline: none;
+  border-color: var(--green1);
+  box-shadow: 0 0 8px var(--green3);
+}
+
+.login-btn {
+  margin-top: 2rem;      
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  background: var(--green1);
+  color: var(--black);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-btn:hover {
+  background: var(--green2);
+  transform: translateY(-2px);
+}
+
+.signup-link {
+  margin-top: 1.5rem;
+  font-size: 0.95rem;
+  color: var(--black);
+}
+
+.signup-link a {
+  color: var(--black);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.signup-link a:hover {
+  text-decoration: underline;
+}
+.login-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.login-logo {
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.login-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2rem;
+  color: var(--black);
+  margin-bottom: -40px;
+}

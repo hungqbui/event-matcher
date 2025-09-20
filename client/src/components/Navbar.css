@@ -1,0 +1,75 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 2rem;
+  background: var(--green1);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-container img {
+  height: 50px;
+}
+
+.logo-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.8rem;
+  color: var(--black);
+  margin: 0;
+}
+
+
+.nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 3rem; 
+  align-items: center;
+}
+
+.nav-tab {
+  text-decoration: none;
+  color: var(--black);
+  font-weight: bold;
+  font-size: 1.2rem; 
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.nav-tab:hover {
+  background: var(--green2);
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-btn {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background: var(--green2);
+  color: var(--black);
+  border-radius: 6px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.nav-btn:hover {
+  background: var(--green3);
+}
+
+.nav-btn.primary {
+  background: var(--yellow);
+}
+
+.nav-btn.primary:hover {
+  background: var(--green3);
+}

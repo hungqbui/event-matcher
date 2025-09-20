@@ -1,0 +1,152 @@
+:root {
+  --green1: #86e7b8;
+  --green2: #93ff96;
+  --green3: #b2ffa8;
+  --yellow: #d0ffb7;
+  --cream: #f2f5de;
+  --black: #000000;
+}
+
+.home {
+  font-family: "Manrope", sans-serif;
+  color: var(--black);
+  background-color: var(--cream);
+  overflow-x: hidden;
+}
+
+.hero {
+  position: relative;
+  height: 80vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-overlay {
+  background-color: rgba(0, 0, 0, 0.5); 
+  color: white;
+  padding: 3rem;
+  text-align: center;
+  border-radius: 12px;
+}
+
+.hero-overlay h1 {
+  font-family: "Oswald", sans-serif;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+.hero-overlay p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+.primary-btn {
+  background-color: var(--green2);
+  border: none;
+  padding: 0.9rem 2rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+
+.impact {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+.impact h2 {
+  font-family: "Oswald", sans-serif;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+}
+.impact-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+}
+.stat h3 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--green2);
+}
+.stat p {
+  margin-top: 0.5rem;
+}
+
+.programs {
+  padding: 4rem;
+  margin-top: -100px;
+}
+
+.program-cards {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+.card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  width: 280px;
+  height: 220px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.card .overlay h3 {
+  color: white;
+  font-family: "Oswald", sans-serif;
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 0 1rem;
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+}
+
+
+
+.section-header {
+  text-align: center;
+  font-size: 4rem;
+  margin: 50px 0 30px 0;
+  font-weight: bold;
+  color: var(--black);
+}
+
+
+.big-header {
+  font-size: 4rem;
+}
+
+
+.mission-section {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
