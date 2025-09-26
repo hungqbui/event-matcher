@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import HomePage from './Homepage';
 import Login from './Auth/Login';
 import Signup from './Auth/Signup';
+import EventListingPage from './pages/EventListing';
 import ProfileForm from './profile/profile';
 
 function App() {
@@ -10,6 +11,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/events" element={<EventListingPage />} />
       <Route path="/profile" element={<ProfileForm user={{name: '', email: ''}} onSave={() => {}} />} />
     </Routes>
   );
