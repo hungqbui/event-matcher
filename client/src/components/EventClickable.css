@@ -1,0 +1,133 @@
+.ec-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 260px;
+    background: linear-gradient(135deg, var(--green2), var(--green1));
+    font-family: var(--font-fam);
+    transition: transform 220ms cubic-bezier(.2, .9, .2, 1), box-shadow 220ms ease;
+}
+
+.ec-card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(90deg, var(--green1), var(--green2), var(--green3));
+    filter: blur(12px);
+    opacity: 0;
+    transition: opacity 220ms ease;
+    z-index: 0;
+    border-radius: 14px;
+    background-size: 200% 200%;
+    animation: ec-gradient-shift 3.5s linear infinite;
+}
+
+/* outer glow layer (outscribe shadow) */
+.ec-card::after{
+    content: "";
+    position: absolute;
+    inset: -40px; /* extends outside card */
+    border-radius: 10px;
+    z-index:  2;
+    pointer-events: none;
+    background: radial-gradient(closest-side, rgba(34,211,238,0.18), rgba(123,97,255,0.08) 40%, transparent 60%);
+    opacity: 0;
+    transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
+    filter: blur(8px);
+}
+
+.ec-card:hover::before,
+.ec-card:focus::before {
+    opacity: 1
+}
+
+.ec-card:hover,
+.ec-card:focus {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(22, 33, 62, 0.20), 0 0 28px rgba(34,211,238,0.06);
+}
+
+.ec-card:hover::after,.ec-card:focus::after{
+    opacity:1; transform: scale(1.02); filter: blur(10px);
+}
+
+.ec-edit-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    z-index:3;
+    width:36px;
+    height:36px;
+    border-radius:8px;
+    border:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.72);
+    color:#fff; /* icon is black-filled in SVG but text color kept for fallback */
+    box-shadow:0 4px 10px rgba(0,0,0,0.08);
+    cursor:pointer;
+    transition:transform 140ms ease,box-shadow 140ms ease,background 140ms ease;
+}
+.ec-edit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,0.24);background:rgba(0,0,0,0.85)}
+.ec-edit-btn svg{display:block}
+
+.ec-edit-btn svg path{fill:currentColor}
+
+.ec-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    z-index: 1
+}
+
+.ec-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    background: #f3f3f3;
+    color: #666;
+    z-index: 1
+}
+
+.ec-body {
+    padding: 12px;
+    z-index: 1
+}
+
+.ec-title {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    color: #222;
+    font-weight: 800
+}
+
+.ec-time {
+    font-size: 0.85rem;
+    color: #888;
+    margin-bottom: 8px
+}
+
+.ec-desc {
+    margin: 0;
+    color: #444;
+    font-size: 0.9rem
+}
+
+@keyframes ec-gradient-shift {
+    0% {
+        background-position: 0% 50%
+    }
+
+    50% {
+        background-position: 100% 50%
+    }
+
+    100% {
+        background-position: 0% 50%
+    }
+}
