@@ -26,14 +26,15 @@
 }
 
 /* outer glow layer (outscribe shadow) */
-.ec-card::after{
+.ec-card::after {
     content: "";
     position: absolute;
-    inset: -40px; /* extends outside card */
+    inset: -40px;
+    /* extends outside card */
     border-radius: 10px;
-    z-index:  2;
+    z-index: 2;
     pointer-events: none;
-    background: radial-gradient(closest-side, rgba(34,211,238,0.18), rgba(123,97,255,0.08) 40%, transparent 60%);
+    background: radial-gradient(closest-side, rgba(34, 211, 238, 0.18), rgba(123, 97, 255, 0.08) 40%, transparent 60%);
     opacity: 0;
     transition: opacity 260ms ease, transform 260ms ease, filter 260ms ease;
     filter: blur(8px);
@@ -47,35 +48,39 @@
 .ec-card:hover,
 .ec-card:focus {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 16px 40px rgba(22, 33, 62, 0.20), 0 0 28px rgba(34,211,238,0.06);
+    box-shadow: 0 16px 40px rgba(22, 33, 62, 0.20), 0 0 28px rgba(34, 211, 238, 0.06);
 }
 
-.ec-card:hover::after,.ec-card:focus::after{
-    opacity:1; transform: scale(1.02); filter: blur(10px);
+.ec-card:hover::after,
+.ec-card:focus::after {
+    opacity: 1;
+    transform: scale(1.02);
+    filter: blur(10px);
 }
 
-.ec-edit-btn{
-    position:absolute;
-    top:8px;
-    right:8px;
-    z-index:3;
-    width:36px;
-    height:36px;
-    border-radius:8px;
-    border:none;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:rgba(0,0,0,0.72);
-    color:#fff; /* icon is black-filled in SVG but text color kept for fallback */
-    box-shadow:0 4px 10px rgba(0,0,0,0.08);
-    cursor:pointer;
-    transition:transform 140ms ease,box-shadow 140ms ease,background 140ms ease;
+.ec-edit-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 3;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.404);
+    transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
 }
-.ec-edit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,0.24);background:rgba(0,0,0,0.85)}
-.ec-edit-btn svg{display:block}
 
-.ec-edit-btn svg path{fill:currentColor}
+.ec-edit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.24);
+    background: rgba(0, 0, 0, 0.85)
+}
+
 
 .ec-image {
     width: 100%;
