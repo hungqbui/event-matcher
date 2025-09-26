@@ -1,4 +1,7 @@
+import "./profile.css";
 import { useState } from "react";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -48,8 +51,10 @@ export default function ProfilePage() {
   };
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <h1>User Profile Management</h1>
+    <>
+    <Navbar />
+    <div className="profile-page">
+  <h1 className="profile-welcome">Welcome, {formData.fullName || "User"}!</h1>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "500px" }}>
         
         <label>
@@ -153,7 +158,7 @@ export default function ProfilePage() {
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
             />
-            <button type="button" onClick={handleAddDate}>Add</button>
+            <button type="button" className="profile-add-btn" onClick={handleAddDate}>Add</button>
           </div>
           <ul>
             {formData.availability.map(date => (
@@ -162,8 +167,10 @@ export default function ProfilePage() {
           </ul>
         </label>
 
-        <button type="submit">Save Profile</button>
+        <button type="submit" className="profile-save-btn">Save Profile</button>
       </form>
     </div>
+    <Footer />
+    </>
   );
 }
