@@ -9,24 +9,30 @@ const initialMock: EventData[] = [
 		img: "/src/assets/Volunteer_home.jpg",
 		name: "Community Food Drive",
 		time: "Sat, Oct 5 · 9:00 AM - 12:00 PM",
-		description:
-			"Join us to collect and distribute food to local families in need. Volunteers will help sort donations and assemble boxes for distribution.",
+		description: "Join us to collect and distribute food to local families in need. Volunteers will help sort donations and assemble boxes for distribution.",
+		location: "",
+		urgency: "low",
+		desiredSkills: []
 	},
 	{
 		id: 2,
 		img: "/src/assets/TreePlant.jpg",
 		name: "Neighborhood Tree Planting",
 		time: "Sun, Oct 13 · 10:00 AM - 2:00 PM",
-		description:
-			"Help us plant trees around the park to improve air quality and provide shade. Gloves and tools will be provided.",
+		description: "Help us plant trees around the park to improve air quality and provide shade. Gloves and tools will be provided.",
+		location: "",
+		urgency: "low",
+		desiredSkills: []
 	},
 	{
 		id: 3,
 		img: "/src/assets/VCleanupHome.webp",
 		name: "Coastal Cleanup",
 		time: "Sat, Nov 2 · 8:00 AM - 11:00 AM",
-		description:
-			"A morning of beach cleanup to remove litter and protect marine life. All ages welcome; bring reusable water bottle.",
+		description: "A morning of beach cleanup to remove litter and protect marine life. All ages welcome; bring reusable water bottle.",
+		location: "",
+		urgency: "low",
+		desiredSkills: []
 	},
 ];
 

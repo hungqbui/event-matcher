@@ -54,7 +54,8 @@
 }
 
 .emp-form input,
-.emp-form textarea {
+.emp-form textarea,
+.emp-form select {
     width: 100%;
     padding: 12px;
     margin-top: 6px;
@@ -63,7 +64,60 @@
     background: rgba(255, 255, 255, 0.5);
     color: #333;
     transition: all 0.3s ease;
-    box-sizing: border-box; /* And this */
+    box-sizing: border-box;
+}
+
+.emp-form select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23333'%3E%3Cpath d='M4 6h8L8 12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.emp-skills-container {
+    margin-top: 6px;
+}
+
+.emp-skills-search {
+    margin-bottom: 8px !important;
+}
+
+.emp-skills-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.emp-skill-item {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.emp-skill-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-1px);
+}
+
+.emp-skill-item--selected {
+    background: var(--green2);
+    color: #333;
+    border-color: var(--green1);
+}
+
+.emp-skill-item--selected:hover {
+    background: var(--green3);
 }
 
 .emp-form input::placeholder,

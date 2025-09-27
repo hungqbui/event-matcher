@@ -1,12 +1,40 @@
 import React, { useState, useEffect } from "react";
 import "./EventManagementPopup.css";
 
+export type Urgency = 'low' | 'medium' | 'high';
+
+export const AVAILABLE_SKILLS = [
+	"First Aid",
+	"CPR",
+	"Teaching",
+	"Leadership",
+	"Organization",
+	"Communication",
+	"Problem Solving",
+	"Event Planning",
+	"Social Media",
+	"Photography",
+	"Writing",
+	"Public Speaking",
+	"Fundraising",
+	"Project Management",
+	"Language Translation",
+	"Medical",
+	"Construction",
+	"Technology",
+	"Cooking",
+	"Driving"
+] as const;
+
 export type EventData = {
 	id?: string | number;
 	img?: string;
 	name: string;
 	time: string;
+	location: string;
+	urgency: Urgency;
 	description?: string;
+	desiredSkills: string[];
 };
 
 type Props = {
@@ -17,7 +45,20 @@ type Props = {
 };
 
 const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose }) => {
-	const [form, setForm] = useState<EventData>({ name: "", time: "", description: "", img: "" });
+	const [form, setForm] = useState<EventData>({
+		name: "",
+		time: new Date().toISOString().slice(0, 16),
+		location: "",
+		urgency: "medium",
+		description: "",
+		img: "",
+		desiredSkills: []
+	});
+
+	const [skillSearch, setSkillSearch] = useState("");
+	const filteredSkills = AVAILABLE_SKILLS.filter(skill => 
+		skill.toLowerCase().includes(skillSearch.toLowerCase())
+	);
 
 	useEffect(() => {
 		if (initial) setForm({ ...form, ...initial });
@@ -26,15 +67,33 @@ const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose 
 
 	useEffect(() => {
 		if (!open) {
-			setForm((f) => ({ ...f, name: f.name ?? "", time: f.time ?? "", description: f.description ?? "", img: f.img ?? "" }));
+			setForm((f) => ({
+				...f,
+				name: f.name ?? "",
+				time: f.time ?? new Date().toISOString().slice(0, 16),
+				location: f.location ?? "",
+				urgency: f.urgency ?? "medium",
+				description: f.description ?? "",
+				img: f.img ?? "",
+				desiredSkills: f.desiredSkills ?? []
+			}));
 		}
 	}, [open]);
 
 	if (!open) return null;
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
 		setForm((s) => ({ ...s, [name]: value }));
+	};
+
+	const handleSkillToggle = (skill: string) => {
+		setForm(prev => ({
+			...prev,
+			desiredSkills: prev.desiredSkills.includes(skill)
+				? prev.desiredSkills.filter(s => s !== skill)
+				: [...prev.desiredSkills, skill]
+		}));
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
@@ -58,13 +117,69 @@ const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose 
 					</label>
 
 					<label>
-						Time
-						<input name="time" value={form.time} onChange={handleChange} required placeholder="e.g., Sat, Oct 5 · 9:00 AM" />
+						Date and Time
+						<input
+							type="time-local"
+							name="time"
+							value={form.time}
+							onChange={handleChange}
+							required
+						/>
+					</label>
+
+					<label>
+						Location
+						<input
+							name="location"
+							value={form.location}
+							onChange={handleChange}
+							required
+							placeholder="e.g., Community Center, 123 Main St"
+						/>
+					</label>
+
+					<label>
+						Urgency
+						<select
+							name="urgency"
+							value={form.urgency}
+							onChange={handleChange}
+							required
+							className="emp-select"
+						>
+							<option value="low">Low Priority</option>
+							<option value="medium">Medium Priority</option>
+							<option value="high">High Priority</option>
+						</select>
 					</label>
 
 					<label>
 						Description
 						<textarea name="description" value={form.description || ""} onChange={handleChange} rows={4} placeholder="Describe the event..." />
+					</label>
+
+					<label>
+						Desired Skills
+						<div className="emp-skills-container">
+							<input
+								type="text"
+								placeholder="Search skills..."
+								value={skillSearch}
+								onChange={(e) => setSkillSearch(e.target.value)}
+								className="emp-skills-search"
+							/>
+							<div className="emp-skills-list">
+								{filteredSkills.map(skill => (
+									<div
+										key={skill}
+										className={`emp-skill-item ${form.desiredSkills.includes(skill) ? 'emp-skill-item--selected' : ''}`}
+										onClick={() => handleSkillToggle(skill)}
+									>
+										{skill}
+									</div>
+								))}
+							</div>
+						</div>
 					</label>
 
 					<div className="emp-actions">
