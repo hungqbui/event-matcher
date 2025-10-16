@@ -9,10 +9,10 @@ export type Task = {
 	score: number;
 };
 
-export type VolunteerHistoryEventData = EventData & {
+export type VolunteerHistoryEventData = Omit<EventData, 'time'> & {
 	score: number;
 	tasks: Task[];
-    time: string;
+	time: string; // Keep the old time field for backward compatibility
 };
 
 type Props = {

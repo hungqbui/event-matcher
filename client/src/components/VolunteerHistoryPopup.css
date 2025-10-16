@@ -57,39 +57,101 @@
     font-size: 1.2rem;
 }
 
-.vhp-details p {
-    margin-bottom: 10px;
-    line-height: 1.6;
+.vhp-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
 }
 
-.vhp-time {
+.vhp-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vhp-label {
     font-weight: 600;
     color: #555;
+    font-size: 0.9rem;
+}
+
+.vhp-description-section {
+    margin: 20px 0;
 }
 
 .vhp-description {
     color: #444;
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+.vhp-urgency {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.vhp-urgency--low {
+    background-color: var(--green1);
+    color: #333;
+}
+
+.vhp-urgency--medium {
+    background-color: var(--yellow);
+    color: #333;
+}
+
+.vhp-urgency--high {
+    background-color: #ff9494;
+    color: #333;
+}
+
+.vhp-skills-section {
+    margin: 20px 0;
+}
+
+.vhp-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.vhp-skill-tag {
+    background-color: var(--green2);
+    color: #333;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.vhp-score-section {
+    margin: 20px 0;
 }
 
 .vhp-score-bar {
     width: 100%;
-    background-color: #e0e0e0;
+    background-color: rgba(0, 0, 0, 0.1);
     border-radius: 8px;
     margin-top: 15px;
     height: 25px;
     position: relative;
     overflow: hidden;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .vhp-score-progress {
     height: 100%;
-    background-color: var(--green3);
+    background: linear-gradient(90deg, var(--green1), var(--green2));
     border-radius: 8px;
     text-align: center;
     line-height: 25px;
     color: white;
     transition: width 0.5s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .vhp-score-text {
@@ -100,6 +162,7 @@
     color: #333;
     font-size: 0.9rem;
     font-weight: 700;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
 }
 
 .vhp-tasks {

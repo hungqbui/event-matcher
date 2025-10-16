@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./EventManagementPopup.css";
+import * as eventUtils from "../utils/fetchEvents.ts"
 
 export type Urgency = 'low' | 'medium' | 'high';
 
@@ -98,7 +99,15 @@ const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose 
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSave(form);
+
+		if (form.id !== undefined)
+			eventUtils.updateEvent(form.id as number, form).then(() => {
+				onSave(form);
+			});
+		else
+			eventUtils.createEvent(form).then((createdEvent) => {
+				onSave(createdEvent);
+			});
 	};
 
 	return (
