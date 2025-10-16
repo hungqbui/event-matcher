@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "./VolunteerMatchingForm.css";
 
-// Define interfaces for better type safety
 interface Volunteer {
   id: number;
   name: string;
+  email?: string;
+  phone?: string;
   skills: string[];
   availability: string;
 }
@@ -12,224 +13,285 @@ interface Volunteer {
 interface Event {
   id: number;
   name: string;
+  description?: string;
   requirements: string[];
   date: string;
+  location?: string;
+  max_volunteers?: number;
+  current_volunteers?: number;
 }
 
-// Mock data - in real app this would come from API
-const mockVolunteers: Volunteer[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    skills: ["tree planting"],
-    availability: "weekends",
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    skills: ["disaster relief"],
-    availability: "weekdays",
-  },
-  {
-    id: 3,
-    name: "Joe Doe",
-    skills: ["youth mentors"],
-    availability: "evenings",
-  },
-  {
-    id: 4,
-    name: "Jim Doe",
-    skills: ["food drives"],
-    availability: "flexible",
-  },
-];
-
-const mockEvents: Event[] = [
-  {
-    id: 1,
-    name: "Food Bank Distribution",
-    requirements: ["food drives"],
-    date: "10/15/2025",
-  },
-  {
-    id: 2,
-    name: "Community Garden Build",
-    requirements: ["tree planting"],
-    date: "10/20/2025",
-  },
-  {
-    id: 3,
-    name: "Hurricane Relief Effort",
-    requirements: ["disaster relief"],
-    date: "10/25/2025",
-  },
-  {
-    id: 4,
-    name: "Youth Mentorship Program",
-    requirements: ["youth mentors"],
-    date: "10/30/2025",
-  },
-];
+const API = "http://localhost:5000/api";
 
 const VolunteerMatchingForm: React.FC = () => {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedVolunteer, setSelectedVolunteer] = useState("");
-  const [matchedEvent, setMatchedEvent] = useState("");
+  const [selectedVol, setSelectedVol] = useState("");
+  const [selectedEvt, setSelectedEvt] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    // Simulate API call
-    setLoading(true);
-    setTimeout(() => {
-      setVolunteers(mockVolunteers);
-      setEvents(mockEvents);
-      setLoading(false);
-    }, 1000);
+    loadData();
   }, []);
 
-  const handleVolunteerChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const volunteerId = e.target.value;
-    setSelectedVolunteer(volunteerId);
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [volRes, evtRes] = await Promise.all([
+        fetch(`${API}/volunteers`),
+        fetch(`${API}/events`),
+      ]);
 
-    if (volunteerId) {
-      // Auto-match event based on volunteer's skills
-      const volunteer = volunteers.find(
-        (v: Volunteer) => v.id === parseInt(volunteerId)
-      );
-      if (volunteer) {
-        const bestMatch = events.find((event: Event) =>
-          event.requirements.some((req: string) =>
-            volunteer.skills.includes(req)
-          )
-        );
-        setMatchedEvent(bestMatch ? bestMatch.id.toString() : "");
+      if (volRes.ok && evtRes.ok) {
+        setVolunteers(await volRes.json());
+        setEvents(await evtRes.json());
+      } else {
+        setError("Failed to load data");
       }
-    } else {
-      setMatchedEvent("");
+    } catch (err) {
+      setError("Can't connect to server");
+    }
+    setLoading(false);
+  };
+
+  const handleVolChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = e.target.value;
+    setSelectedVol(id);
+    setSelectedEvt("");
+    setError("");
+    setSuccess("");
+
+    if (!id) return;
+
+    try {
+      const res = await fetch(`${API}/match/find`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ volunteer_id: parseInt(id) }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.event) {
+          setSelectedEvt(data.event.id.toString());
+        }
+      } else if (res.status === 404) {
+        setError("No matching events found");
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleSubmit = () => {
-    if (!selectedVolunteer || !matchedEvent) {
-      alert("Please select both a volunteer and an event");
+  const handleSubmit = async () => {
+    if (!selectedVol || !selectedEvt) {
+      setError("Select volunteer and event");
       return;
     }
 
-    const volunteer = volunteers.find(
-      (v: Volunteer) => v.id === parseInt(selectedVolunteer)
-    );
-    const event = events.find((e: Event) => e.id === parseInt(matchedEvent));
+    setLoading(true);
+    setError("");
+    setSuccess("");
 
-    if (volunteer && event) {
-      alert(`Successfully matched ${volunteer.name} to ${event.name}!`);
+    try {
+      const res = await fetch(`${API}/match`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          volunteer_id: parseInt(selectedVol),
+          event_id: parseInt(selectedEvt),
+        }),
+      });
+
+      if (res.ok) {
+        const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
+        const evt = events.find((e) => e.id === parseInt(selectedEvt));
+        setSuccess(`${vol?.name} matched to ${evt?.name}!`);
+
+        await loadData();
+
+        setTimeout(() => {
+          setSelectedVol("");
+          setSelectedEvt("");
+          setSuccess("");
+        }, 3000);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Match failed");
+      }
+    } catch (err) {
+      setError("Failed to create match");
     }
-
-    // Reset form
-    setSelectedVolunteer("");
-    setMatchedEvent("");
+    setLoading(false);
   };
 
-  if (loading) {
-    return <div className="loading">Loading volunteers and events...</div>;
+  const reset = () => {
+    setSelectedVol("");
+    setSelectedEvt("");
+    setError("");
+    setSuccess("");
+  };
+
+  if (loading && volunteers.length === 0) {
+    return <div className="loading">Loading...</div>;
   }
+
+  const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
+  const evt = events.find((e) => e.id === parseInt(selectedEvt));
 
   return (
     <div className="form-container">
       <h2>Volunteer Matching Form</h2>
+
+      {error && (
+        <div
+          style={{
+            background: "#fee",
+            border: "1px solid #fcc",
+            color: "#c00",
+            padding: "10px",
+            borderRadius: "5px",
+            marginBottom: "15px",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
+      {success && (
+        <div
+          style={{
+            background: "#efe",
+            border: "1px solid #cfc",
+            color: "#060",
+            padding: "10px",
+            borderRadius: "5px",
+            marginBottom: "15px",
+          }}
+        >
+          {success}
+        </div>
+      )}
+
       <div className="matching-form">
         <div className="form-group">
-          <label htmlFor="volunteer-select">Volunteer Name:</label>
+          <label htmlFor="vol-select">Volunteer:</label>
           <select
-            id="volunteer-select"
-            value={selectedVolunteer}
-            onChange={handleVolunteerChange}
+            id="vol-select"
+            value={selectedVol}
+            onChange={handleVolChange}
             className="form-select"
+            disabled={loading}
           >
-            <option value="">Select a volunteer...</option>
-            {volunteers.map((volunteer: Volunteer) => (
-              <option key={volunteer.id} value={volunteer.id}>
-                {volunteer.name}
+            <option value="">Select volunteer...</option>
+            {volunteers.map((v) => (
+              <option key={v.id} value={v.id}>
+                {v.name}
               </option>
             ))}
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="event-select">Matched Event:</label>
+          <label htmlFor="evt-select">Event:</label>
           <select
-            id="event-select"
-            value={matchedEvent}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-              setMatchedEvent(e.target.value)
-            }
+            id="evt-select"
+            value={selectedEvt}
+            onChange={(e) => setSelectedEvt(e.target.value)}
             className="form-select"
+            disabled={loading}
           >
-            <option value="">Select an event...</option>
-            {events.map((event: Event) => (
-              <option key={event.id} value={event.id}>
-                {event.name} - {event.date}
+            <option value="">Select event...</option>
+            {events.map((e) => (
+              <option key={e.id} value={e.id}>
+                {e.name} - {e.date}
+                {e.current_volunteers !== undefined &&
+                  e.max_volunteers !== undefined &&
+                  ` (${e.current_volunteers}/${e.max_volunteers})`}
               </option>
             ))}
           </select>
         </div>
 
-        {selectedVolunteer && (
+        {vol && (
           <div className="volunteer-info">
             <h3>Volunteer Details:</h3>
-            {volunteers
-              .filter((v: Volunteer) => v.id === parseInt(selectedVolunteer))
-              .map((volunteer: Volunteer) => (
-                <div key={volunteer.id} className="info-card">
-                  <p>
-                    <strong>Name:</strong> {volunteer.name}
-                  </p>
-                  <p>
-                    <strong>Skills:</strong> {volunteer.skills.join(", ")}
-                  </p>
-                  <p>
-                    <strong>Availability:</strong> {volunteer.availability}
-                  </p>
-                </div>
-              ))}
+            <div className="info-card">
+              <p>
+                <strong>Name:</strong> {vol.name}
+              </p>
+              {vol.email && (
+                <p>
+                  <strong>Email:</strong> {vol.email}
+                </p>
+              )}
+              {vol.phone && (
+                <p>
+                  <strong>Phone:</strong> {vol.phone}
+                </p>
+              )}
+              <p>
+                <strong>Skills:</strong> {vol.skills.join(", ")}
+              </p>
+              <p>
+                <strong>Availability:</strong> {vol.availability}
+              </p>
+            </div>
           </div>
         )}
 
-        {matchedEvent && (
+        {evt && (
           <div className="event-info">
             <h3>Event Details:</h3>
-            {events
-              .filter((e: Event) => e.id === parseInt(matchedEvent))
-              .map((event: Event) => (
-                <div key={event.id} className="info-card">
+            <div className="info-card">
+              <p>
+                <strong>Event:</strong> {evt.name}
+              </p>
+              {evt.description && (
+                <p>
+                  <strong>Description:</strong> {evt.description}
+                </p>
+              )}
+              <p>
+                <strong>Date:</strong> {evt.date}
+              </p>
+              {evt.location && (
+                <p>
+                  <strong>Location:</strong> {evt.location}
+                </p>
+              )}
+              <p>
+                <strong>Requirements:</strong> {evt.requirements.join(", ")}
+              </p>
+              {evt.current_volunteers !== undefined &&
+                evt.max_volunteers !== undefined && (
                   <p>
-                    <strong>Event:</strong> {event.name}
+                    <strong>Volunteers:</strong> {evt.current_volunteers}/
+                    {evt.max_volunteers}
                   </p>
-                  <p>
-                    <strong>Date:</strong> {event.date}
-                  </p>
-                  <p>
-                    <strong>Requirements:</strong>{" "}
-                    {event.requirements.join(", ")}
-                  </p>
-                </div>
-              ))}
+                )}
+            </div>
           </div>
         )}
 
         <div className="form-actions">
-          <button type="button" className="submit-btn" onClick={handleSubmit}>
-            Match Volunteer to Event
+          <button
+            type="button"
+            className="submit-btn"
+            onClick={handleSubmit}
+            disabled={loading || !selectedVol || !selectedEvt}
+          >
+            {loading ? "Matching..." : "Match Volunteer"}
           </button>
           <button
             type="button"
             className="reset-btn"
-            onClick={() => {
-              setSelectedVolunteer("");
-              setMatchedEvent("");
-            }}
+            onClick={reset}
+            disabled={loading}
           >
-            Reset Form
+            Reset
           </button>
         </div>
       </div>
