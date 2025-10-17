@@ -4,8 +4,8 @@ import ProfileForm from "./profile"; //ProfileForm is a functional component in 
 export default function ProfilePage() {
   // Fake user data – in a real app this would come from a backend
   const [user, setUser] = useState({
-    name: "Diana Brix",
-    email: "diana@example.com",
+    name: "John Smith",
+    email: "jsmith@example.com",
   });
 
   return (

@@ -15,7 +15,7 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/events" element={<EventListingPage />} />
       <Route path="/profile" element={<ProfileForm user={{name: '', email: ''}} onSave={() => {}} />} />
-      <Route path="/admin/volunteers" element={<VolunteerHistory />} />
+      <Route path="/admin/volunteerhistory" element={<VolunteerHistory />} />
     </Routes>
   );
 }
