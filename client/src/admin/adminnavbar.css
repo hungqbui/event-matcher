@@ -1,0 +1,104 @@
+:root {
+  --green1: #86E7B8;
+  --green2: #93FF96;
+  --green3: #B2FFA8;
+  --yellow: #D0FFB7;
+  --cream: #F2F5DE;
+  --black: #000000;
+}
+
+/*
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 2rem;
+  background: var(--yellow);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.admin-navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.admin-navbar a {
+  font-family: 'Oswald', sans-serif;
+  color: var(--black);
+  text-decoration: none;
+}
+
+.admin-navbar a:hover {
+  text-decoration: underline;
+}
+  */
+
+.admin-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.8rem 2rem;
+  background: var(--green3); /* darker than main navbar */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.admin-logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-logo-container img {
+  height: 50px;
+}
+
+.admin-logo-text {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.8rem;
+  color: var(--black);
+  margin: 0;
+}
+
+.admin-nav-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  align-items: center;
+}
+
+.admin-nav-tab {
+  text-decoration: none;
+  color: var(--black);
+  font-weight: bold;
+  font-size: 1.2rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  transition: 0.3s;
+}
+
+.admin-nav-tab:hover {
+  background: var(--green2);
+}
+
+.admin-auth-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.admin-nav-btn {
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background: var(--yellow); /* yellow buttons so they stand out */
+  color: var(--black);
+  border-radius: 6px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.admin-nav-btn:hover {
+  background: var(--green2);
+}
+
+
+
