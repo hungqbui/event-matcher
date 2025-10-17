@@ -12,10 +12,14 @@ app.register_blueprint(volunteer_bp, url_prefix='/api')
 from routes.notification import bp as notification_bp
 app.register_blueprint(notification_bp, url_prefix='/api')
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+from routes.auth import bp as auth_bp
+app.register_blueprint(auth_bp, url_prefix='/api')
+
+#@app.route('/')
+#def index():
+ #   return render_template('index.html')
 
 if __name__ == '__main__':
     print("Flask running on http://localhost:5000")
     app.run(debug=True, port=5000)
+
