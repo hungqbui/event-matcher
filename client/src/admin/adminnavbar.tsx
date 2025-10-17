@@ -9,14 +9,24 @@ export default function AdminNavbar() {
       </div>
 
       <div className="admin-nav-tabs">
-        <Link to="/admin/dashboard" className="admin-nav-tab">Match</Link>
-        <Link to="/admin/events" className="admin-nav-tab">Event Management</Link>
-        <Link to="/admin/volunteers" className="admin-nav-tab">Volunteers</Link>
-        <Link to="/admin/history" className="admin-nav-tab">Participation History</Link>
+        <Link to="/admin/matching" className="admin-nav-tab">
+          Match
+        </Link>
+        <Link to="/admin/events" className="admin-nav-tab">
+          Event Management
+        </Link>
+        <Link to="/admin/volunteers" className="admin-nav-tab">
+          Volunteers
+        </Link>
+        <Link to="/admin/history" className="admin-nav-tab">
+          Participation History
+        </Link>
       </div>
 
       <div className="admin-auth-buttons">
-        <Link to="/logout" className="admin-nav-btn">Logout</Link>
+        <Link to="/logout" className="admin-nav-btn">
+          Logout
+        </Link>
       </div>
     </nav>
   );
