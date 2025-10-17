@@ -1,78 +1,58 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
+from services.notificationService import NotificationService
 
 bp = Blueprint('notifications', __name__)
-
-# In-memory storage for demo purposes
-# In production, you'd use a proper database
-notifications_db = [
-    {
-        "id": 1,
-        "message": "New event assignment: Community Food Drive",
-        "read": False
-    },
-    {
-        "id": 2,
-        "message": "Event update: Beach cleanup location changed",
-        "read": False
-    },
-    {
-        "id": 3,
-        "message": "Reminder: Community Garden Build tomorrow",
-        "read": True
-    }
-]
-
-next_id = 4  # Track next available ID
 
 
 @bp.route('/notifications', methods=['GET'])
 def get_notifications():
     """Get all notifications for the user"""
-    return jsonify(notifications_db)
+    # Check if we want unread only
+    unread_only = request.args.get('unread', '').lower() == 'true'
+    
+    if unread_only:
+        return NotificationService.get_unread_notifications()
+    return NotificationService.get_all_notifications()
 
 
-@bp.route('/notifications/<int:notification_id>/read', methods=['PUT'])
+@bp.route('/notifications/<notification_id>', methods=['GET'])
+def get_notification(notification_id):
+    """Get a specific notification"""
+    return NotificationService.get_notification_by_id(notification_id)
+
+
+@bp.route('/notifications/count', methods=['GET'])
+def get_notification_count():
+    """Get notification counts"""
+    return NotificationService.get_notification_count()
+
+
+@bp.route('/notifications/<notification_id>/read', methods=['PUT'])
 def mark_as_read(notification_id):
     """Mark a specific notification as read"""
-    for notification in notifications_db:
-        if notification['id'] == notification_id:
-            notification['read'] = True
-            return jsonify({"success": True, "notification": notification})
-    
-    return jsonify({"success": False, "error": "Notification not found"}), 404
+    return NotificationService.mark_as_read(notification_id)
 
 
-@bp.route('/notifications/<int:notification_id>', methods=['DELETE'])
+@bp.route('/notifications/read-all', methods=['PUT'])
+def mark_all_as_read():
+    """Mark all notifications as read"""
+    return NotificationService.mark_all_as_read()
+
+
+@bp.route('/notifications/<notification_id>', methods=['DELETE'])
 def delete_notification(notification_id):
     """Delete a specific notification"""
-    global notifications_db
-    
-    initial_length = len(notifications_db)
-    notifications_db = [n for n in notifications_db if n['id'] != notification_id]
-    
-    if len(notifications_db) < initial_length:
-        return jsonify({"success": True})
-    
-    return jsonify({"success": False, "error": "Notification not found"}), 404
+    return NotificationService.delete_notification(notification_id)
+
+
+@bp.route('/notifications/read', methods=['DELETE'])
+def delete_all_read():
+    """Delete all read notifications"""
+    return NotificationService.delete_all_read_notifications()
 
 
 @bp.route('/notifications', methods=['POST'])
 def create_notification():
     """Create a new notification"""
-    global next_id
-    
     data = request.get_json()
-    
-    if not data or 'message' not in data:
-        return jsonify({"success": False, "error": "Message is required"}), 400
-    
-    new_notification = {
-        "id": next_id,
-        "message": data['message'],
-        "read": False
-    }
-    
-    notifications_db.append(new_notification)
-    next_id += 1
-    
-    return jsonify({"success": True, "notification": new_notification}), 201
+    return NotificationService.create_notification(data)

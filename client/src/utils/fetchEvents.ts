@@ -1,5 +1,5 @@
 import type { EventData } from "../components/EventManagementPopup";
-
+import type { VolunteerHistoryEventData } from "../components/VolunteerHistoryEvent";
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -162,6 +162,19 @@ export const deleteEvent = async (id: number): Promise<void> => {
         }
     } catch (error) {
         console.error('Error deleting event:', error);
+        throw error;
+    }
+};
+
+export const fetchHistoryEvents = async (): Promise<VolunteerHistoryEventData[]> => {
+    try {
+        const response = await fetch(`${API_BASE_URL}/volunteer_user/history`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch history events');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching history events:', error);
         throw error;
     }
 };
