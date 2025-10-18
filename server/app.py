@@ -25,17 +25,14 @@ app.register_blueprint(volunteer_bp, url_prefix='/api')
 from routes.notification import bp as notification_bp
 app.register_blueprint(notification_bp, url_prefix='/api')
 
-#import profile routes
-from routes.profile import profile_bp
-app.register_blueprint(profile_bp, url_prefix='/api')
+from routes.auth import bp as auth_bp
+app.register_blueprint(auth_bp, url_prefix='/api')
 
-#import volunteer history routes
-from routes.volunteer_history import history_bp
-app.register_blueprint(history_bp, url_prefix='/api')
-
-@app.route('/')
-def index():
-    return render_template('index.html')
+#@app.route('/')
+#def index():
+ #   return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    print("Flask running on http://localhost:5000")
+    app.run(host="0.0.0.0", debug=True, port=5000)
+

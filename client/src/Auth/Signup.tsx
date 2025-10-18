@@ -4,74 +4,75 @@ import PinePalLogo from "../assets/pineLogo.webp";
 import Home from "../assets/Volunteer_home.jpg";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-const states = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+
+const states = ["TX", "CA", "NY"];
 const skillsOptions = ["Tree Planting", "Disaster Relief", "Youth Mentorship", "Food Drives", "Blood Drives"];
 
 const Signup: React.FC = () => {
-  const [skills, setSkills] = useState<string[]>([]);
+  const [form, setForm] = useState({ name: "", email: "", password: "", state: "", skills: [] as string[] });
+  const [message, setMessage] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected = Array.from(e.target.selectedOptions, option => option.value);
-    setSkills(selected);
+    const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+    setForm({ ...form, skills: selected });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://127.0.0.1:5000/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok) setMessage("Signup successful! You can now log in.");
+      else setMessage(data.message);
+    } catch {
+      setMessage("Server error");
+    }
   };
 
   return (
     <>
-    <Navbar />
-    <div className="signup-page" style={{ backgroundImage: `url(${Home})` }}>
-      <div className="signup-overlay">
-        <div className="signup-card">
-          <img src={PinePalLogo} alt="Pine Pals Logo" className="signup-logo" />
-          <h2 className="signup-title">Volunteer Sign Up</h2>
-          <form className="signup-form">
-            <label>Full Name *</label>
-            <input type="text" placeholder="Enter your full name" maxLength={50} required />
+      <Navbar />
+      <div className="signup-page" style={{ backgroundImage: `url(${Home})` }}>
+        <div className="signup-overlay">
+          <div className="signup-card">
+            <img src={PinePalLogo} alt="Pine Pals Logo" className="signup-logo" />
+            <h2 className="signup-title">Volunteer Sign Up</h2>
+            <form className="signup-form" onSubmit={handleSubmit}>
+              <label>Full Name *</label>
+              <input name="name" value={form.name} onChange={handleChange} required />
 
-            <label>Address 1 *</label>
-            <input type="text" placeholder="Street Address" maxLength={100} required />
+              <label>State *</label>
+              <select name="state" value={form.state} onChange={handleChange} required>
+                <option value="">Select State</option>
+                {states.map(s => <option key={s}>{s}</option>)}
+              </select>
 
-            <label>Address 2</label>
-            <input type="text" placeholder="Apt, Suite, etc. (Optional)" maxLength={100} />
+              <label>Skills *</label>
+              <select multiple name="skills" value={form.skills} onChange={handleSkillsChange}>
+                {skillsOptions.map(skill => <option key={skill}>{skill}</option>)}
+              </select>
 
-            <label>City *</label>
-            <input type="text" placeholder="City" maxLength={100} required />
+              <label>Email *</label>
+              <input name="email" type="email" value={form.email} onChange={handleChange} required />
 
-            <label>State *</label>
-            <select required>
-              <option value="">Select State</option>
-              {states.map(state => (
-                <option key={state} value={state}>{state}</option>
-              ))}
-            </select>
+              <label>Password *</label>
+              <input name="password" type="password" value={form.password} onChange={handleChange} required />
 
-            <label>Zip Code *</label>
-            <input type="text" placeholder="Zip Code" maxLength={9} required />
-
-            <label>Skills *</label>
-            <select multiple required value={skills} onChange={handleSkillsChange} className="skills-select">
-              {skillsOptions.map(skill => (
-                <option key={skill} value={skill}>{skill}</option>
-              ))}
-            </select>
-
-            <label>Preferences</label>
-            <textarea placeholder="Any preferences or notes (Optional)"></textarea>
-
-            <label>Availability *</label>
-            <input type="date" required />
-
-            <label>Email *</label>
-            <input type="email" placeholder="Enter your email" required />
-
-            <label>Password *</label>
-            <input type="password" placeholder="Enter a password" required />
-
-            <button type="submit" className="signup-btn">Create Account</button>
-          </form>
+              <button type="submit" className="signup-btn">Create Account</button>
+            </form>
+            {message && <p>{message}</p>}
+          </div>
         </div>
       </div>
-    </div>
-    <Footer />
+      <Footer />
     </>
   );
 };
