@@ -2,6 +2,7 @@ import AdminNavbar from "./adminnavbar";
 import "./volunteerhistory.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useState, useEffect } from "react";
 
 type VolunteerRecord = {
   name: string;
@@ -12,26 +13,15 @@ type VolunteerRecord = {
   status: "Registered" | "Attended" | "Cancelled" | "No-Show";
 };
 
-const dummyData: VolunteerRecord[] = [
-  {
-    name: "John Doe",
-    eventName: "Food Drive",
-    date: "2025-09-20",
-    location: "Houston Community Center",
-    description: "Helped distribute meals.",
-    status: "Attended",
-  },
-  {
-    name: "Jane Smith",
-    eventName: "Beach Cleanup",
-    date: "2025-08-15",
-    location: "Galveston Beach",
-    description: "Collected trash along shoreline.",
-    status: "No-Show",
-  },
-];
-
 export default function VolunteerHistory() {
+  const [records, setRecords] = useState<VolunteerRecord[]>([]); 
+  useEffect(() => {
+  fetch('http://localhost:5000/api/volunteer-history')
+    .then(res => res.json())
+    .then(data => setRecords(data))
+    .catch(err => console.error("Error:", err));
+}, []);
+
   return (
     <>
     <Navbar />
@@ -53,16 +43,16 @@ export default function VolunteerHistory() {
             </tr>
           </thead>
           <tbody>
-            {dummyData.map((record, index) => (
+            {records.map((record, index) => (
               <tr key={index}>
-                <td>{record.name}</td>
-                <td>{record.eventName}</td>
-                <td>{record.date}</td>
-                <td>{record.location}</td>
-                <td>{record.description}</td>
-                <td>{record.status}</td>
-              </tr>
-            ))}
+              <td>{record.name}</td>
+              <td>{record.eventName}</td>
+              <td>{record.date}</td>
+              <td>{record.location}</td>
+              <td>{record.description}</td>
+              <td>{record.status}</td>
+            </tr>
+          ))}
           </tbody>
         </table>
       </div>
