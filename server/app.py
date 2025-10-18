@@ -13,6 +13,10 @@ CORS(app)
 from routes.manager import bp as manager_bp
 app.register_blueprint(manager_bp, url_prefix='/api/manager')
 
+# Import usersided volunteer routes
+from routes.volunteer_user import bp as volunteer_user_bp
+app.register_blueprint(volunteer_user_bp, url_prefix='/api/volunteer_user')
+
 # Import volunteer matching routes
 from routes.volunteer_matching import bp as volunteer_bp
 app.register_blueprint(volunteer_bp, url_prefix='/api')
@@ -20,10 +24,6 @@ app.register_blueprint(volunteer_bp, url_prefix='/api')
 # Import notification routes
 from routes.notification import bp as notification_bp
 app.register_blueprint(notification_bp, url_prefix='/api')
-
-# Import usersided volunteer routes
-from routes.volunteer_user import bp as volunteer_user_bp
-app.register_blueprint(volunteer_user_bp, url_prefix='/api/volunteer_user')
 
 #import profile routes
 from routes.profile import profile_bp
