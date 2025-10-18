@@ -1,0 +1,45 @@
+/* Footer.css */
+.footer {
+  background: linear-gradient(135deg, var(--green1), var(--green2));
+  color: var(--black);
+  padding: 3rem 2rem 1rem 2rem;
+  font-family: "Manrope", sans-serif;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-section {
+  flex: 1 1 250px;
+}
+
+.footer-section h3 {
+  font-family: "Oswald", sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-section p,
+.footer-section a {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--black);
+  text-decoration: none;
+}
+
+.footer-section a:hover {
+  text-decoration: underline;
+}
+
+.footer-bottom {
+  text-align: center;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: var(--black);
+}

@@ -1,0 +1,186 @@
+.form-container {
+  max-width: 500px;
+  margin: 60px auto;
+  padding: 40px;
+  background: rgba(139, 217, 174, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  font-family: 'Manrope', sans-serif;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.form-container h2 {
+  color: #000;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.matching-form {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #000;
+  font-size: 16px;
+}
+
+.form-select {
+  width: 100%;
+  padding: 15px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #ffffff;
+  color: #000000;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.form-select::placeholder {
+  color: rgba(0, 0, 0, 0.6); 
+}
+
+.form-select:focus {
+  outline: none;
+  background: #f5f5f5 ;   
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.3);
+}
+
+.form-select option {
+  background: #ffffff ;   
+  color: #000000;  
+  padding: 10px;
+}
+
+/* Additional specificity for select elements */
+select.form-select {
+  background: #ffffff;
+  color: #000000;
+}
+
+select.form-select option {
+  background: #ffffff;
+  color: #000000;
+}
+
+.volunteer-info, .event-info {
+  margin: 25px 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 4px solid #4CAF50;
+  border-radius: 8px;
+  backdrop-filter: blur(5px);
+}
+
+.volunteer-info h3, .event-info h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #000;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.info-card {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.info-card p {
+  margin: 10px 0;
+  line-height: 1.5;
+  color: #000;
+}
+
+.info-card strong {
+  color: #000;
+  font-weight: 600;
+}
+
+.form-actions {
+  margin-top: 35px;
+  text-align: center;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.submit-btn {
+  background: rgba(76, 175, 80, 0.9);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 180px;
+}
+
+.submit-btn:hover {
+  background: rgba(76, 175, 80, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.reset-btn {
+  background: rgba(244, 67, 54, 0.9);
+  color: white;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.reset-btn:hover {
+  background: rgba(244, 67, 54, 1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+}
+
+.reset-btn:active {
+  transform: translateY(0);
+}
+
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 18px;
+  color: #000;
+}
+
+.no-results {
+  text-align: center;
+  padding: 30px;
+  color: #000;
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 20px 0;
+}

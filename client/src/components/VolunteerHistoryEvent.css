@@ -1,0 +1,89 @@
+.vhe-card {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    border-radius: 12px;
+    overflow: hidden;
+    width: 260px;
+    background: linear-gradient(135deg, var(--green2), var(--green1));
+    font-family: var(--font-fam);
+    transition: transform 220ms cubic-bezier(.2, .9, .2, 1), box-shadow 220ms ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.vhe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.vhe-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.vhe-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    background: #f3f3f3;
+    color: #666;
+}
+
+.vhe-body {
+    padding: 12px;
+    color: #333;
+}
+
+.vhe-title {
+    margin: 0 0 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.vhe-time {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.vhe-desc {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    color: #555;
+}
+
+.vhe-score-bar {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    margin-top: 10px;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vhe-score-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green1), var(--green2));
+    border-radius: 5px;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    transition: width 0.5s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.vhe-score-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 20px;
+    color: #333;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}

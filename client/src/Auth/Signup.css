@@ -1,0 +1,131 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600&family=Oswald:wght@500&display=swap');
+
+:root {
+  --green1: #86E7B8;
+  --green2: #93FF96;
+  --green3: #B2FFA8;
+  --yellow: #D0FFB7;
+  --cream: #F2F5DE;
+  --black: #000000;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Manrope', sans-serif;
+}
+
+.signup-page {
+  min-height: 100vh;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signup-overlay {
+  background-color: rgba(0,0,0,0.5);
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.signup-card {
+  background: linear-gradient(135deg, var(--green1), var(--green2));
+  border-radius: 25px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  width: 500px;
+  max-width: 90%;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  color: var(--black);
+}
+
+.signup-logo {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+
+.signup-title {
+  font-family: 'Oswald', sans-serif;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.signup-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+
+.signup-form label {
+  font-weight: bold;
+  font-size: 1rem;
+  margin-bottom: 0.3rem;
+  display: block;
+  text-align: left;
+  color: var(--black);
+}
+
+.signup-form input,
+.signup-form select,
+.signup-form textarea {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 15px;
+  border: 2px solid var(--green3);
+  font-size: 1rem;
+  outline: none;
+  background-color: white;
+  color: var(--black); 
+  box-sizing: border-box;
+}
+
+.skills-select {
+  background-color: white;
+  color: var(--black); 
+}
+
+.signup-form input:focus,
+.signup-form select:focus,
+.signup-form textarea:focus {
+  border-color: var(--green1);
+  box-shadow: 0 0 8px var(--green2);
+}
+
+.signup-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.signup-btn {
+  margin-top: 1.5rem;
+  padding: 0.9rem;
+  border: none;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--green1);
+  color: var(--black);
+  transition: background 0.3s, transform 0.2s;
+}
+
+.signup-btn:hover {
+  background: var(--green2);
+  transform: translateY(-2px);
+}

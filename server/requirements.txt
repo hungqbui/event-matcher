@@ -2,3 +2,5 @@ flask
 flask-cors
 flask-sqlalchemy
 python-dotenv
+PyJWT
+coverage

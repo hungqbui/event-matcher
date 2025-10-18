@@ -1,0 +1,20 @@
+.hl-page {
+    font-family: var(--font-fam);
+    background-color: beige;
+    min-height: 100vh;
+}
+
+.hl-title {
+    margin: 0;
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.hl-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}

@@ -1,0 +1,37 @@
+:root {
+  --green1: #86E7B8;
+  --green2: #93FF96;
+  --green3: #B2FFA8;
+  --yellow: #D0FFB7;
+  --cream: #F2F5DE;
+  --black: #000000;
+}
+
+
+.volunteer-history {
+  padding: 2rem;
+}
+
+.volunteer-history table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.volunteer-history th,
+.volunteer-history td {
+  border: 1px solid var(--cream);
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.volunteer-history th {
+  background-color: var(--cream);
+}
+
+.volunteer-history {
+  min-height: 100vh;
+  padding: 2rem;
+  background: var(--cream); /* or another light background */
+  color: var(--black);
+}
+

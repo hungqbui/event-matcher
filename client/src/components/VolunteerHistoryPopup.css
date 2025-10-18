@@ -1,0 +1,241 @@
+.vhp-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 400;
+    backdrop-filter: blur(8px);
+}
+
+.vhp-modal {
+    background: linear-gradient(135deg, var(--green1), var(--green2), var(--green3), var(--yellow));
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite, fadeIn 0.3s ease-out;
+    padding: 25px;
+    border-radius: 18px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+    color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-sizing: border-box;
+    position: relative;
+}
+
+.vhp-modal h3 {
+    text-align: center;
+    color: #222;
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.vhp-image-container {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.vhp-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vhp-image--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: #e0e0e0;
+    color: #777;
+    font-size: 1.2rem;
+}
+
+.vhp-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.vhp-info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vhp-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9rem;
+}
+
+.vhp-description-section {
+    margin: 20px 0;
+}
+
+.vhp-description {
+    color: #444;
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+.vhp-urgency {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.vhp-urgency--low {
+    background-color: var(--green1);
+    color: #333;
+}
+
+.vhp-urgency--medium {
+    background-color: var(--yellow);
+    color: #333;
+}
+
+.vhp-urgency--high {
+    background-color: #ff9494;
+    color: #333;
+}
+
+.vhp-skills-section {
+    margin: 20px 0;
+}
+
+.vhp-skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.vhp-skill-tag {
+    background-color: var(--green2);
+    color: #333;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.9rem;
+}
+
+.vhp-score-section {
+    margin: 20px 0;
+}
+
+.vhp-score-bar {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    margin-top: 15px;
+    height: 25px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vhp-score-progress {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green1), var(--green2));
+    border-radius: 8px;
+    text-align: center;
+    line-height: 25px;
+    color: white;
+    transition: width 0.5s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.vhp-score-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    line-height: 25px;
+    color: #333;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.vhp-tasks {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.vhp-tasks h4 {
+    color: #222;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.vhp-tasks ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.vhp-tasks li {
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #444;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.vhp-task--completed {
+    background-color: var(--green1);
+    color: #222;
+    font-weight: 500;
+}
+
+.vhp-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #555;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.vhp-close-btn:hover {
+    color: #222;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}

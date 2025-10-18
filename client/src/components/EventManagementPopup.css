@@ -1,0 +1,169 @@
+.emp-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    backdrop-filter: blur(5px);
+}
+
+.emp-modal {
+    background: linear-gradient(45deg, #86e7b8, #93ff96, #b2ffa8, #d0ffb7);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite, fadeIn 0.3s ease-out;
+    padding: 24px;
+    border-radius: 16px;
+    max-width: 520px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    color: #333;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-sizing: border-box; /* Add this */
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.95);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.emp-form label {
+    display: block;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.emp-form input,
+.emp-form textarea,
+.emp-form select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    color: #333;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.emp-form select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23333'%3E%3Cpath d='M4 6h8L8 12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.emp-skills-container {
+    margin-top: 6px;
+}
+
+.emp-skills-search {
+    margin-bottom: 8px !important;
+}
+
+.emp-skills-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.emp-skill-item {
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.emp-skill-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-1px);
+}
+
+.emp-skill-item--selected {
+    background: var(--green2);
+    color: #333;
+    border-color: var(--green1);
+}
+
+.emp-skill-item--selected:hover {
+    background: var(--green3);
+}
+
+.emp-form input::placeholder,
+.emp-form textarea::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.emp-form input:focus,
+.emp-form textarea:focus {
+    outline: none;
+    border-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.emp-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.emp-cancel,
+.emp-save {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.emp-cancel {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.emp-cancel:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.emp-save {
+    background: #86e7b8;
+    color: #333;
+}
+
+.emp-save:hover {
+    background: #93ff96;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
