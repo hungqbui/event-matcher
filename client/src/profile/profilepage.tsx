@@ -1,4 +1,4 @@
-import { useState } from "react";
+/*import { useState } from "react";
 import ProfileForm from "./profile"; //ProfileForm is a functional component in profile.tsx
 
 export default function ProfilePage() {
@@ -23,3 +23,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+  */

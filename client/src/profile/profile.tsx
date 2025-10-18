@@ -1,5 +1,5 @@
 import "./profile.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
@@ -17,6 +17,13 @@ export default function ProfilePage() {
   });
 
   const [newDate, setNewDate] = useState("");
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/profile')
+      .then(res => res.json())
+      .then(data => setFormData(data))
+      .catch(err => console.error("Error:", err));
+    }, []);
 
   const states = [
     { code: "TX", name: "Texas" },
@@ -44,11 +51,22 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Saved profile:", formData);
-    alert("Profile saved (check console for data)");
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    const res = await fetch('http://localhost:5000/api/profile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    const data = await res.json();
+    
+    if (!res.ok) throw data;
+    alert("Profile saved successfully!");
+  } catch (err: any) {
+    alert(`Error: ${err.errors?.join(', ') || 'Unknown error'}`);
+  }
+};
 
   return (
     <>

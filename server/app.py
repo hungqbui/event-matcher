@@ -12,6 +12,14 @@ app.register_blueprint(volunteer_bp, url_prefix='/api')
 from routes.notification import bp as notification_bp
 app.register_blueprint(notification_bp, url_prefix='/api')
 
+#import profile routes
+from routes.profile import profile_bp
+app.register_blueprint(profile_bp, url_prefix='/api')
+
+#import volunteer history routes
+from routes.volunteer_history import history_bp
+app.register_blueprint(history_bp, url_prefix='/api')
+
 @app.route('/')
 def index():
     return render_template('index.html')

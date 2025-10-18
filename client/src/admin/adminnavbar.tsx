@@ -18,9 +18,6 @@ export default function AdminNavbar() {
         <Link to="/admin/volunteers" className="admin-nav-tab">
           Volunteers
         </Link>
-        <Link to="/admin/history" className="admin-nav-tab">
-          Participation History
-        </Link>
       </div>
 
       <div className="admin-auth-buttons">
