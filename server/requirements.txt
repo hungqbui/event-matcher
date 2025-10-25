@@ -4,3 +4,4 @@ flask-sqlalchemy
 python-dotenv
 PyJWT
 coverage
+mysql-connector-python
