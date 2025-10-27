@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from services.volunteerService import VolunteerService
+from ..services.volunteerService import VolunteerService
 
 bp = Blueprint('volunteer', __name__)
 
