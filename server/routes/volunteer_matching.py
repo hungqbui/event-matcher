@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.volunteerMatchingService import VolunteerService, EventService, MatchService
+from ..services.volunteerMatchingService import VolunteerService, EventService, MatchService
 
 bp = Blueprint('volunteer_matching', __name__)
 

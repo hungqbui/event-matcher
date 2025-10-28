@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-from services.notificationService import NotificationService
+from ..services.notificationService import NotificationService
 
 bp = Blueprint('notifications', __name__)
 
