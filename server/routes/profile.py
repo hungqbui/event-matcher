@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 import re
-from services.profileService import ProfileService
+from ..services.profileService import ProfileService
 
 profile_bp = Blueprint('profile', __name__)
 
