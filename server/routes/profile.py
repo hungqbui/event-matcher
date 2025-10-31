@@ -1,19 +1,14 @@
-from flask import Blueprint, jsonify, request
-import re
+from flask import Blueprint
 from ..services.profileService import ProfileService
 
 profile_bp = Blueprint('profile', __name__)
 
-
-@profile_bp.route('/profile', methods=['GET'])  # Note: /profile under /api prefix
+@profile_bp.route('/profile', methods=['GET'])
 def get_profile():
     return ProfileService.get_current_profile()
 
 @profile_bp.route('/profile', methods=['POST'])
 def update_profile():
+    from flask import request
     data = request.json
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
-    
     return ProfileService.update_profile(data)
-    # ... (rest of validation code from earlier)

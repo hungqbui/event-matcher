@@ -14,9 +14,9 @@ except Exception:
 def make_engine_from_env():
     host = os.getenv("DB_HOST", "127.0.0.1")
     port = os.getenv("DB_PORT", "3306")
-    name = os.getenv("DB_NAME", "EventMatchers")
+    name = os.getenv("DB_NAME", "eventmatchers")
     user = os.getenv("DB_USER", "dev_user")
-    pw   = quote_plus(os.getenv("DB_PASS", ""))  
+    pw   = quote_plus(os.getenv("DB_PASS", "Team15"))  
 
 
     url = f"mysql+pymysql://{user}:{pw}@{host}:{port}/{name}?charset=utf8mb4"
