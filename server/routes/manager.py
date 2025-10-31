@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from functools import wraps
+from ..services.managerService import ManagerEventService, MOCK_EVENTS
 
-from services.managerService import *
 
 bp = Blueprint('manager', __name__)
 

@@ -1,38 +1,53 @@
-from flask import render_template, Flask, jsonify
-from flask_cors import CORS
-import jwt
-from functools import wraps
-from flask import request
 
-# Import blueprints
+from flask import Flask
+from flask_cors import CORS
+import os
+from sqlalchemy import create_engine
+from urllib.parse import quote_plus
+
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
+
+def make_engine_from_env():
+    host = os.getenv("DB_HOST", "127.0.0.1")
+    port = os.getenv("DB_PORT", "3306")
+    name = os.getenv("DB_NAME", "EventMatchers")
+    user = os.getenv("DB_USER", "dev_user")
+    pw   = quote_plus(os.getenv("DB_PASS", ""))  
+
+
+    url = f"mysql+pymysql://{user}:{pw}@{host}:{port}/{name}?charset=utf8mb4"
+
+    return create_engine(url, pool_pre_ping=True, future=True)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.config["ENGINE"] = make_engine_from_env()
 
-# Import manager related routes
-from routes.manager import bp as manager_bp
-app.register_blueprint(manager_bp, url_prefix='/api/manager')
+from .routes.auth import bp as auth_bp
+from .routes.manager import bp as manager_bp
+from .routes.notification import bp as notifications_bp
+from .routes.profile import profile_bp
+from .routes.volunteer_history import history_bp
+from .routes.volunteer_matching import bp as matching_bp
+from .routes.volunteer_user import bp as volunteer_user_bp
 
-# Import usersided volunteer routes
-from routes.volunteer_user import bp as volunteer_user_bp
-app.register_blueprint(volunteer_user_bp, url_prefix='/api/volunteer_user')
 
-# Import volunteer matching routes
-from routes.volunteer_matching import bp as volunteer_bp
-app.register_blueprint(volunteer_bp, url_prefix='/api')
+app.register_blueprint(auth_bp,          url_prefix="/api")
+app.register_blueprint(manager_bp,       url_prefix="/api")
+app.register_blueprint(notifications_bp, url_prefix="/api")
+app.register_blueprint(profile_bp,       url_prefix="/api")
+app.register_blueprint(history_bp,       url_prefix="/api")
+app.register_blueprint(matching_bp,      url_prefix="/api")
+app.register_blueprint(volunteer_user_bp,url_prefix="/api")
 
-# Import notification routes
-from routes.notification import bp as notification_bp
-app.register_blueprint(notification_bp, url_prefix='/api')
+@app.get("/ping")
+def ping():
+    return "pong", 200
 
-from routes.auth import bp as auth_bp
-app.register_blueprint(auth_bp, url_prefix='/api')
-
-#@app.route('/')
-#def index():
- #   return render_template('index.html')
-
-if __name__ == '__main__':
-    print("Flask running on http://localhost:5000")
-    app.run(host="0.0.0.0", debug=True, port=5000)
-
+if __name__ == "__main__":
+    print("Flask running on http://127.0.0.1:5000")
+    app.run(host="127.0.0.1", port=5000, debug=True)
