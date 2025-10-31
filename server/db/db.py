@@ -1,9 +1,9 @@
 import mysql.connector
 
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",
-    password="admin",
+    host="127.0.0.1",
+    user="dev_user",
+    password="Team15",
     database="eventmatcher"
 )
 
