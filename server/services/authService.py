@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
 import json
 import re
+from middleware.auth import generate_token
 
 users = [{"email": "test@example.com", "password": "1234", "name": "Test User"}]
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -100,9 +101,19 @@ class AuthService:
                             {"u": user_id, "s": sid}
                         )
 
+        # Generate JWT token
+        user_data = {
+            "id": user_id,
+            "name": name,
+            "email": email,
+            "role": "volunteer"  # default role
+        }
+        token = generate_token(user_data)
+
         return jsonify({
             "message": "Signup successful",
-            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills}
+            "token": token,
+            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills, "role": "volunteer"}
         }), 201
     
     @staticmethod
@@ -120,7 +131,7 @@ class AuthService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             row = conn.execute(text("""
-                SELECT id, name, email, password_hash, state
+                SELECT id, name, email, password_hash, state, role
                 FROM users
                 WHERE email = :email
                 LIMIT 1
@@ -129,12 +140,25 @@ class AuthService:
         if not row or not check_password_hash(row["password_hash"], pw):
             return jsonify({"message": "Invalid credentials"}), 401
 
-        return jsonify({
-            "message": "Login successful",
+        # Generate JWT token
+        user_data = {
             "id": row["id"],
             "name": row["name"],
             "email": row["email"],
-            "state": row["state"],
+            "role": row.get("role", "volunteer")  # default to volunteer if role not set
+        }
+        token = generate_token(user_data)
+
+        return jsonify({
+            "message": "Login successful",
+            "token": token,
+            "user": {
+                "id": row["id"],
+                "name": row["name"],
+                "email": row["email"],
+                "state": row["state"],
+                "role": row.get("role", "volunteer")
+            }
         }), 200
         
     @staticmethod

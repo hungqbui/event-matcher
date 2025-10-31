@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from ..services.volunteerMatchingService import VolunteerService, EventService, MatchService
+from ..middleware.auth import jwt_required, optional_jwt
 
 bp = Blueprint('volunteer_matching', __name__)
 
@@ -7,6 +8,7 @@ bp = Blueprint('volunteer_matching', __name__)
 # ========== Volunteer Routes ==========
 
 @bp.route('/volunteers', methods=['GET'])
+@optional_jwt
 def list_volunteers():
     """Get all volunteers"""
     return VolunteerService.get_all()

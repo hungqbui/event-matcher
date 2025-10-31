@@ -1,16 +1,10 @@
 from flask import Blueprint, request, jsonify
 from functools import wraps
 from ..services.managerService import ManagerEventService, MOCK_EVENTS
+from ..middleware.auth import admin_required
 
 
 bp = Blueprint('manager', __name__)
-
-def admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        return f(*args, **kwargs)
-            
-    return decorated
 
 @bp.route('/events', methods=['GET'])
 @admin_required

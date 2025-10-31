@@ -27,6 +27,10 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["ENGINE"] = make_engine_from_env()
 
+# JWT Configuration
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
+app.config["JWT_EXPIRATION_HOURS"] = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
+
 from .routes.auth import bp as auth_bp
 from .routes.manager import bp as manager_bp
 from .routes.notification import bp as notifications_bp
@@ -37,12 +41,12 @@ from .routes.volunteer_user import bp as volunteer_user_bp
 
 
 app.register_blueprint(auth_bp,          url_prefix="/api")
-app.register_blueprint(manager_bp,       url_prefix="/api")
-app.register_blueprint(notifications_bp, url_prefix="/api")
-app.register_blueprint(profile_bp,       url_prefix="/api")
-app.register_blueprint(history_bp,       url_prefix="/api")
-app.register_blueprint(matching_bp,      url_prefix="/api")
-app.register_blueprint(volunteer_user_bp,url_prefix="/api")
+app.register_blueprint(manager_bp,       url_prefix="/api/manager")
+app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
+app.register_blueprint(profile_bp,       url_prefix="/api/profile")
+app.register_blueprint(history_bp,       url_prefix="/api/history")
+app.register_blueprint(matching_bp,      url_prefix="/api/matching")
+app.register_blueprint(volunteer_user_bp,url_prefix="/api/volunteer_user")
 
 @app.get("/ping")
 def ping():

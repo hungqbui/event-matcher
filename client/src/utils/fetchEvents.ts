@@ -1,15 +1,12 @@
 import type { EventData } from "../components/EventManagementPopup";
 import type { VolunteerHistoryEventData } from "../components/VolunteerHistoryEvent";
+import { getToken } from "./auth";
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = '/api';
 
-// Get token from localStorage
+// Get token from localStorage using auth utility
 const getAuthToken = (): string | null => {
-
-    // TODO: Use once done with auth 
-    return "some_token"
-
-    // return localStorage.getItem('authToken');
+    return getToken();
 };
 
 // Regular user fetch - no auth required

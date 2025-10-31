@@ -31,15 +31,24 @@ MOCK_EVENTS = {
     }
 }
 
-from flask import jsonify
+from sqlalchemy import text
+from flask import jsonify, current_app
+
+engine = current_app.config["ENGINE"]
+
+conn = engine.connect()
 
 class ManagerEventService:
+    
     @staticmethod
     def fetch_events(status=None):
+        
+        events = conn.execute("SELECT * FROM events").mappings().all()
+
         if status:
-            filtered_events = {k: v for k, v in MOCK_EVENTS.items() if v['urgency'] == status}
+            filtered_events = {k: v for k, v in events.items() if v['urgency'] == status}
             return jsonify(list(filtered_events.values()))
-        return jsonify(list(MOCK_EVENTS.values()))
+        return jsonify(list(events.values()))
 
     @staticmethod
     def create_event(data):
@@ -64,32 +73,51 @@ class ManagerEventService:
             'desiredSkills': data.get('desiredSkills', [])
         }
         
-        MOCK_EVENTS[str(event_id)] = new_event
+        try:
+            conn.execute(text("""
+                INSERT INTO events (id, img, name, time, description, location, urgency, desiredSkills)
+                VALUES (:id, :img, :name, :time, :description, :location, :urgency, :desiredSkills)
+            """), new_event)
+        except Exception as e:
+            return jsonify({'message': 'Error creating event', 'error': str(e)}), 500
+            
         return jsonify(new_event), 201
     
     @staticmethod
     def update_event(event_id, data):
         if event_id not in MOCK_EVENTS:
             return jsonify({'message': 'Event not found'}), 404
-        
-        event = MOCK_EVENTS[event_id]
-        
+        event = conn.execute(text("SELECT * FROM events WHERE id = :id"), {'id': event_id}).mappings().first()
+        if not event:
+            return jsonify({'message': 'Event not found'}), 404
+        if event['ownerid'] != :
 
-        # Update fields
-        field_mapping = {
-            'name': 'name',
-            'img': 'img',
-            'time': 'time',
-            'description': 'description',
-            'location': 'location',
-            'urgency': 'urgency',
-            'desiredSkills': 'desiredSkills'
-        }
-        
-        for client_field, db_field in field_mapping.items():
-            if client_field in data:
-                event[db_field] = data[client_field]
-        
+        try:
+            event = conn.execute(text("""
+                UPDATE events
+                SET img = :img,
+                    name = :name,
+                    time = :time,
+                    description = :description,
+                    location = :location,
+                    urgency = :urgency,
+                    desiredSkills = :desiredSkills
+                WHERE id = :id
+            """), {
+                'id': event_id,
+                'img': data.get('img', MOCK_EVENTS[event_id]['img']),
+                'name': data.get('name', MOCK_EVENTS[event_id]['name']),
+                'time': data.get('time', MOCK_EVENTS[event_id]['time']),
+                'description': data.get('description', MOCK_EVENTS[event_id]['description']),
+                'location': data.get('location', MOCK_EVENTS[event_id]['location']),
+                'urgency': data.get('urgency', MOCK_EVENTS[event_id]['urgency']),
+                'desiredSkills': data.get('desiredSkills', MOCK_EVENTS[event_id]['desiredSkills'])
+            })
+
+        except Exception as e:
+            return jsonify({'message': 'Error updating event', 'error': str(e)}), 500
+
+
         return jsonify(event)
     
     @staticmethod

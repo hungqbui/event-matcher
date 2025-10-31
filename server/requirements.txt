@@ -5,3 +5,4 @@ python-dotenv
 PyJWT
 coverage
 mysql-connector-python
+pymysql
