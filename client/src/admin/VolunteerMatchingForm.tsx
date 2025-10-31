@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import AdminNavbar from "./adminnavbar";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "./VolunteerMatchingForm.css";
 
 interface Volunteer {
@@ -142,6 +145,9 @@ const VolunteerMatchingForm: React.FC = () => {
   const evt = events.find((e) => e.id === parseInt(selectedEvt));
 
   return (
+    <>
+    <Navbar /> 
+    <AdminNavbar />
     <div className="form-container">
       <h2>Volunteer Matching Form</h2>
 
@@ -296,6 +302,8 @@ const VolunteerMatchingForm: React.FC = () => {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 
