@@ -1,13 +1,50 @@
 import pytest
-from services.authService import AuthService, users
+import sys
+import os
+from flask import Flask
+from sqlalchemy import create_engine, text
+
+# Add parent directory to path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from services.authService import AuthService
 
 
-@pytest.fixture(autouse=True)
-def reset_users():
-    """Reset users list before each test"""
-    users.clear()
-    users.append({"email": "test@example.com", "password": "1234", "name": "Test User"})
-    yield
+@pytest.fixture
+def app():
+    """Create and configure a test Flask app."""
+    app = Flask(__name__)
+    app.config['TESTING'] = True
+    # Update with your test database credentials
+    app.config['ENGINE'] = create_engine('mysql+pymysql://root:@localhost/eventmatcher_test')
+    
+    with app.app_context():
+        # Clean up test data before tests
+        engine = app.config['ENGINE']
+        with engine.begin() as conn:
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
+            conn.execute(text("TRUNCATE TABLE user_skills"))
+            conn.execute(text("TRUNCATE TABLE volunteer_skills"))
+            conn.execute(text("TRUNCATE TABLE volunteers"))
+            conn.execute(text("TRUNCATE TABLE admins"))
+            conn.execute(text("TRUNCATE TABLE users"))
+            conn.execute(text("DELETE FROM skills WHERE name LIKE 'Test%'"))
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
+    
+    yield app
+    
+    # Cleanup after tests
+    with app.app_context():
+        engine = app.config['ENGINE']
+        with engine.begin() as conn:
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 0"))
+            conn.execute(text("TRUNCATE TABLE user_skills"))
+            conn.execute(text("TRUNCATE TABLE volunteer_skills"))
+            conn.execute(text("TRUNCATE TABLE volunteers"))
+            conn.execute(text("TRUNCATE TABLE admins"))
+            conn.execute(text("TRUNCATE TABLE users"))
+            conn.execute(text("DELETE FROM skills WHERE name LIKE 'Test%'"))
+            conn.execute(text("SET FOREIGN_KEY_CHECKS = 1"))
 
 
 class TestAuthServiceSignup:

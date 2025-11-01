@@ -7,17 +7,19 @@ class VolunteerService:
 		with engine.connect() as conn:
 			user_id = id
 			result = conn.execute(text("""
-				SELECT name, event_name as eventName, time_label as date,
-						location, description,
+				SELECT e.name as eventName, e.time_label as date,
+						e.location, e.description,
 						CASE 
-							WHEN urgency = 'low' THEN 'Registered'
-							WHEN urgency = 'medium' THEN 'Attended'
-							WHEN urgency = 'high' THEN 'Cancelled'
-							ELSE 'No-Show'
+							WHEN m.status = 'pending' THEN 'Registered'
+							WHEN m.status = 'confirmed' THEN 'Attended'
+							WHEN m.status = 'cancelled' THEN 'Cancelled'
+							ELSE 'Registered'
 						END as status
-				FROM volunteer_history
-				WHERE volunteer_id = :volunteer_id
-				ORDER BY created_at DESC
+				FROM volunteer_history vh
+				JOIN events e ON vh.event_id = e.id
+				LEFT JOIN matches m ON vh.volunteer_id = m.volunteer_id AND vh.event_id = m.event_id
+				WHERE vh.volunteer_id = :volunteer_id
+				ORDER BY vh.created_at DESC
 			"""), {"volunteer_id": user_id}).mappings().all()
    
 		return jsonify([dict(row) for row in result])

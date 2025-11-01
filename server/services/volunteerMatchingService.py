@@ -75,7 +75,7 @@ class VolunteerService:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT * FROM volunteers"))
             volunteers = result.mappings().all()
-        return jsonify(volunteers), 200
+        return jsonify([dict(v) for v in volunteers]), 200
     
     @staticmethod
     def get_by_id(vol_id):
@@ -85,8 +85,8 @@ class VolunteerService:
             result = conn.execute(text("SELECT * FROM volunteers WHERE id = :vol_id"), {"vol_id": vol_id})
             volunteer = result.mappings().first()
         if not volunteer:
-            return jsonify({'error': 'Not found'}), 404
-        return jsonify(volunteer), 200
+            return jsonify({'message': 'Not found'}), 404
+        return jsonify(dict(volunteer)), 200
     
     @staticmethod
     def create(data):
@@ -94,9 +94,9 @@ class VolunteerService:
         
         # Validate required fields
         if not data.get('name') or not data.get('email') or not data.get('availability'):
-            return jsonify({'error': 'Name, email, and availability required'}), 400
+            return jsonify({'message': 'Name, email, and availability required'}), 400
         if not ValidationHelper.valid_email(data['email']):
-            return jsonify({'error': 'Invalid email'}), 400
+            return jsonify({'message': 'Invalid email'}), 400
 
         engine = current_app.config["ENGINE"]
         try:
@@ -114,7 +114,7 @@ class VolunteerService:
                 new_id = result.lastrowid
         except Exception as e:
             conn.rollback()
-            return jsonify({'error': str(e)}), 400
+            return jsonify({'message': str(e)}), 400
 
         return jsonify({'id': new_id, **data}), 201
     
@@ -144,7 +144,7 @@ class EventService:
                 GROUP BY e.id
             """))
         events = result.mappings().all()
-        return jsonify(events), 200
+        return jsonify([dict(e) for e in events]), 200
     
     @staticmethod
     def get_by_id(event_id):
@@ -160,8 +160,8 @@ class EventService:
         """), {"event_id": event_id})
         event = result.mappings().first()
         if not event:
-            return jsonify({'error': 'Not found'}), 404
-        return jsonify(event), 200
+            return jsonify({'message': 'Not found'}), 404
+        return jsonify(dict(event)), 200
 
 class MatchService:
     """Service for managing volunteer-event matches"""
@@ -176,7 +176,7 @@ class MatchService:
             result = conn.execute(text("SELECT * FROM volunteers WHERE id = :vol_id"), {"vol_id": vol_id})
             volunteer = result.mappings().first()
             if not volunteer:
-                return jsonify({'error': 'Volunteer not found'}), 404
+                return jsonify({'message': 'Volunteer not found'}), 404
 
             # 2️⃣ Get volunteer’s skills
             result = conn.execute(text("""
@@ -217,41 +217,52 @@ class MatchService:
         return jsonify({'event': best_event, 'score': best_score}), 200
     
     @staticmethod
-    def create_match(vol_id, event_id):
+    def create_match(vol_id, event_id, status='pending'):
         """Create a match between volunteer and event"""
         
         engine = current_app.config["ENGINE"]
-        with engine.connect() as conn:
-            # check existing match
-            result = conn.execute(text("""
-                SELECT * FROM matches WHERE volunteer_id = :vol_id AND event_id = :event_id
-            """), {"vol_id": vol_id, "event_id": event_id})
-            if result.mappings().first():
-                return jsonify({'error': 'Already matched'}), 400
+        try:
+            with engine.connect() as conn:
+                # check existing match
+                result = conn.execute(text("""
+                    SELECT * FROM matches WHERE volunteer_id = :vol_id AND event_id = :event_id
+                """), {"vol_id": vol_id, "event_id": event_id})
+                if result.mappings().first():
+                    return jsonify({'message': 'Match already exists'}), 400
 
-            # event capacity
-            result = conn.execute(text("""
-                SELECT COUNT(m.id) AS count, e.max_volunteers
-                FROM events e
-                LEFT JOIN matches m ON e.id = m.event_id
-                WHERE e.id = :event_id
-                GROUP BY e.id
-            """), {"event_id": event_id})
-            row = result.mappings().first()
-            if row and row['count'] >= row['max_volunteers']:
-                return jsonify({'error': 'Event full'}), 400
+                # event capacity
+                result = conn.execute(text("""
+                    SELECT COUNT(m.id) AS count, e.max_volunteers
+                    FROM events e
+                    LEFT JOIN matches m ON e.id = m.event_id
+                    WHERE e.id = :event_id
+                    GROUP BY e.id
+                """), {"event_id": event_id})
+                row = result.mappings().first()
+                if row and row['count'] >= row['max_volunteers']:
+                    return jsonify({'message': 'Event full'}), 400
 
-            # insert match
-            conn.execute(text("""
-                INSERT INTO matches (volunteer_id, event_id, status, matched_at)
-                VALUES (:vol_id, :event_id, 'confirmed', NOW())
-            """), {"vol_id": vol_id, "event_id": event_id})
-            conn.commit()
+                # insert match
+                conn.execute(text("""
+                    INSERT INTO matches (volunteer_id, event_id, status, matched_at)
+                    VALUES (:vol_id, :event_id, :status, NOW())
+                """), {"vol_id": vol_id, "event_id": event_id, "status": status})
+                conn.commit()
 
-            result = conn.execute(text("SELECT * FROM matches WHERE id = LAST_INSERT_ID()"))
-            new_match = result.mappings().first()
+                result = conn.execute(text("SELECT * FROM matches WHERE id = LAST_INSERT_ID()"))
+                new_match = result.mappings().first()
 
-        return jsonify(new_match), 201
+            # Convert RowMapping to dict
+            return jsonify(dict(new_match)), 201
+        except Exception as e:
+            # Handle IntegrityError (e.g., invalid volunteer_id or event_id)
+            error_msg = str(e)
+            if 'foreign key constraint' in error_msg.lower():
+                if 'volunteer' in error_msg.lower():
+                    return jsonify({'message': 'Volunteer not found'}), 404
+                elif 'event' in error_msg.lower():
+                    return jsonify({'message': 'Event not found'}), 404
+            return jsonify({'message': 'Database error'}), 500
     
     @staticmethod
     def get_all():
@@ -266,7 +277,7 @@ class MatchService:
                 JOIN events e ON m.event_id = e.id
             """))
         matches = result.mappings().all()
-        return jsonify(matches), 200
+        return jsonify([dict(m) for m in matches]), 200
 
     @staticmethod
     def get_by_volunteer(vol_id):
@@ -281,7 +292,7 @@ class MatchService:
                 WHERE m.volunteer_id = :vol_id
         """), {"vol_id": vol_id})
         matches = result.mappings().all()
-        return jsonify(matches), 200
+        return jsonify([dict(m) for m in matches]), 200
 
     @staticmethod
     def get_by_event(event_id):
@@ -296,7 +307,7 @@ class MatchService:
                 WHERE m.event_id = :event_id
             """), {"event_id": event_id})
         matches = result.mappings().all()
-        return jsonify(matches), 200
+        return jsonify([dict(m) for m in matches]), 200
 
     @staticmethod
     def delete(match_id):
@@ -305,7 +316,7 @@ class MatchService:
         with engine.connect() as conn:
             result = conn.execute(text("SELECT id FROM matches WHERE id = :match_id"), {"match_id": match_id})
             if not result.mappings().first():
-                return jsonify({'error': 'Not found'}), 404
+                return jsonify({'message': 'Not found'}), 404
 
             conn.execute(text("DELETE FROM matches WHERE id = :match_id"), {"match_id": match_id})
             conn.commit()
@@ -316,9 +327,61 @@ class MatchService:
     def update_status(match_id, status):
         """Update match status"""
         if status not in ['pending', 'confirmed', 'cancelled']:
-            return jsonify({'error': 'Invalid status'}), 400
+            return jsonify({'message': 'Invalid status'}), 400
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
+            # Check if match exists
+            result = conn.execute(text("SELECT id FROM matches WHERE id = :match_id"), {"match_id": match_id})
+            if not result.mappings().first():
+                return jsonify({'message': 'Not found'}), 404
+            
             conn.execute(text("UPDATE matches SET status = :status WHERE id = :match_id"), {"status": status, "match_id": match_id})
             conn.commit()
         return jsonify({'message': 'Status updated'}), 200
+
+
+class VolunteerMatchingService:
+    """Unified service for volunteer matching functionality"""
+    
+    @staticmethod
+    def get_available_events(user_id):
+        """Get available events for a volunteer"""
+        return EventService.get_all()
+    
+    @staticmethod
+    def get_matches(user_id):
+        """Get matches for a volunteer"""
+        return MatchService.get_by_volunteer(user_id)
+    
+    @staticmethod
+    def create_match(data):
+        """Create a new match"""
+        vol_id = data.get('volunteer_id')
+        event_id = data.get('event_id')
+        status = data.get('status', 'pending')
+        if not vol_id or not event_id:
+            return jsonify({'message': 'volunteer_id and event_id required'}), 400
+        return MatchService.create_match(vol_id, event_id, status)
+    
+    @staticmethod
+    def update_match_status(match_id, data):
+        """Update match status"""
+        status = data.get('status')
+        if not status:
+            return jsonify({'message': 'status required'}), 400
+        return MatchService.update_status(match_id, status)
+    
+    @staticmethod
+    def delete_match(match_id):
+        """Delete a match"""
+        return MatchService.delete(match_id)
+    
+    @staticmethod
+    def find_matching_volunteers(event_id):
+        """Find volunteers matching an event"""
+        return MatchService.get_by_event(event_id)
+    
+    @staticmethod
+    def find_available_volunteers(start_date=None, end_date=None):
+        """Find available volunteers"""
+        return VolunteerService.get_all()

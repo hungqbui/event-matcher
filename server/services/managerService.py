@@ -25,9 +25,9 @@ class ManagerEventService:
 
             if status:
                 filtered_events = [event for event in events_list if event['urgency'] == status]
-                return jsonify(filtered_events)
+                return jsonify(filtered_events), 200
             
-            return jsonify(events_list)
+            return jsonify(events_list), 200
 
     @staticmethod
     def create_event(data):
@@ -41,28 +41,31 @@ class ManagerEventService:
         userid = data.get('userId')
         
         with engine.connect() as conn:
-            user = conn.execute(text("SELECT * FROM admins WHERE user_id = :id"), {'user_id': userid}).mappings().first()
+            user = conn.execute(text("SELECT * FROM admins WHERE user_id = :user_id"), {'user_id': userid}).mappings().first()
             
             if not user:
                 return jsonify({'message': 'Unauthorized'}), 403
             
             # Create new event
             new_event = {
+                'ownerid': user['user_id'],
                 'img': data.get('img', '/src/assets/Volunteer_home.jpg'),  # Default image if none provided
                 'name': data['name'],
-                'time': data['time'],
+                'time_label': data['time'],
+                'date': data.get('date', '2024-12-31'),  # Default date
                 'description': data['description'],
                 'location': data['location'],
-                'urgency': data.get('urgency', 'low'),
-                'desiredSkills': data.get('desiredSkills', [])
+                'max_volunteers': data.get('max_volunteers', 10),
+                'urgency': data.get('urgency', 'low')
             }
             
             try:
-                conn.execute(text("""
-                    INSERT INTO events (img, name, time, description, location, urgency, desiredSkills)
-                    VALUES ( :img, :name, :time, :description, :location, :urgency, :desiredSkills)
+                result = conn.execute(text("""
+                    INSERT INTO events (ownerid, img, name, time_label, date, description, location, max_volunteers, urgency)
+                    VALUES (:ownerid, :img, :name, :time_label, :date, :description, :location, :max_volunteers, :urgency)
                 """), new_event)
                 conn.commit()
+                new_event['id'] = result.lastrowid
             except Exception as e:
                 return jsonify({'message': 'Error creating event', 'error': str(e)}), 500
                 
@@ -77,8 +80,9 @@ class ManagerEventService:
             if not event:
                 return jsonify({'message': 'Event not found'}), 404
 
-
-            if str(event['ownerid']) != str(data.get('userId')):
+            # Check if user is the event owner
+            userid = data.get('userId')
+            if str(event['ownerid']) != str(userid):
                 return jsonify({'message': 'Unauthorized'}), 403
 
             try:
@@ -109,7 +113,7 @@ class ManagerEventService:
                 print(e)
                 return jsonify({'message': 'Error updating event', 'error': str(e)}), 500
 
-        return jsonify(dict(updated_event))
+        return jsonify(dict(updated_event)), 200
     
     @staticmethod
     def delete_event(event_id):
@@ -123,10 +127,11 @@ class ManagerEventService:
             body = request.get_json()
             userid = body.get('userId')
 
-            if event['ownerid'] != userid:
+            # Check if user is the event owner
+            if str(event['ownerid']) != str(userid):
                 return jsonify({'message': 'Unauthorized'}), 403
             
             conn.execute(text("DELETE FROM events WHERE id = :id"), {'id': event_id})
             conn.commit()
         
-        return jsonify({'message': 'Event deleted successfully'})
+        return jsonify({'message': 'Event deleted successfully'}), 200
