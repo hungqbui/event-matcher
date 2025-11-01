@@ -6,7 +6,7 @@ interface Volunteer {
   name: string;
   email?: string;
   phone?: string;
-  skills: string[];
+  skills: string | string[]; // backend may return CSV or array;
   availability: string;
 }
 
@@ -14,7 +14,7 @@ interface Event {
   id: number;
   name: string;
   description?: string;
-  requirements: string[];
+  requirements: string | string[];
   date: string;
   location?: string;
   max_volunteers?: number;
@@ -44,16 +44,24 @@ const VolunteerMatchingForm: React.FC = () => {
         fetch(`${API}/events`),
       ]);
 
-      if (volRes.ok && evtRes.ok) {
-        setVolunteers(await volRes.json());
-        setEvents(await evtRes.json());
-      } else {
-        setError("Failed to load data");
+      if (!volRes.ok || !evtRes.ok) {
+        throw new Error("Failed to load data");
       }
+
+      const vols = await volRes.json();
+
+      const evts = await evtRes.json();
+
+      setVolunteers(vols);
+
+      setEvents(evts);
     } catch (err) {
-      setError("Can't connect to server");
+      console.error(err);
+
+      setError("Could not connect to the server.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleVolChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -76,12 +84,15 @@ const VolunteerMatchingForm: React.FC = () => {
         const data = await res.json();
         if (data.event) {
           setSelectedEvt(data.event.id.toString());
+        } else {
+          setError("No suitable events found.");
         }
       } else if (res.status === 404) {
         setError("No matching events found");
       }
     } catch (err) {
       console.error(err);
+      setError("Error finding match.");
     }
   };
 
@@ -104,11 +115,11 @@ const VolunteerMatchingForm: React.FC = () => {
           event_id: parseInt(selectedEvt),
         }),
       });
-
+      const data = await res.json();
       if (res.ok) {
         const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
         const evt = events.find((e) => e.id === parseInt(selectedEvt));
-        setSuccess(`${vol?.name} matched to ${evt?.name}!`);
+        setSuccess(`${vol?.name} successfully matched to ${evt?.name}!`);
 
         await loadData();
 
@@ -118,13 +129,14 @@ const VolunteerMatchingForm: React.FC = () => {
           setSuccess("");
         }, 3000);
       } else {
-        const data = await res.json();
-        setError(data.error || "Match failed");
+        setError(data.error || "Failed to create match.");
       }
     } catch (err) {
-      setError("Failed to create match");
+      console.error(err);
+      setError("Error creating match.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const reset = () => {
@@ -140,6 +152,15 @@ const VolunteerMatchingForm: React.FC = () => {
 
   const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
   const evt = events.find((e) => e.id === parseInt(selectedEvt));
+
+  const formatList = (value: string | string[]) => {
+    if (Array.isArray(value)) return value.join(", ");
+    return value;
+  };
+
+  if (loading && volunteers.length === 0) {
+    return <div className="loading">Loading volunteers and events...</div>;
+  }
 
   return (
     <div className="form-container">
@@ -206,10 +227,10 @@ const VolunteerMatchingForm: React.FC = () => {
             <option value="">Select event...</option>
             {events.map((e) => (
               <option key={e.id} value={e.id}>
-                {e.name} - {e.date}
-                {e.current_volunteers !== undefined &&
-                  e.max_volunteers !== undefined &&
-                  ` (${e.current_volunteers}/${e.max_volunteers})`}
+                {e.name} - {e.date}{" "}
+                {e.max_volunteers && e.current_volunteers !== undefined
+                  ? `(${e.current_volunteers}/${e.max_volunteers})`
+                  : ""}
               </option>
             ))}
           </select>
@@ -233,7 +254,7 @@ const VolunteerMatchingForm: React.FC = () => {
                 </p>
               )}
               <p>
-                <strong>Skills:</strong> {vol.skills.join(", ")}
+                <strong>Skills:</strong> {formatList(vol.skills)}
               </p>
               <p>
                 <strong>Availability:</strong> {vol.availability}
@@ -263,15 +284,14 @@ const VolunteerMatchingForm: React.FC = () => {
                 </p>
               )}
               <p>
-                <strong>Requirements:</strong> {evt.requirements.join(", ")}
+                <strong>Requirements:</strong> {formatList(evt.requirements)}
               </p>
-              {evt.current_volunteers !== undefined &&
-                evt.max_volunteers !== undefined && (
-                  <p>
-                    <strong>Volunteers:</strong> {evt.current_volunteers}/
-                    {evt.max_volunteers}
-                  </p>
-                )}
+              {evt.max_volunteers && (
+                <p>
+                  <strong>Volunteers:</strong> {evt.current_volunteers ?? 0}/
+                  {evt.max_volunteers}
+                </p>
+              )}
             </div>
           </div>
         )}

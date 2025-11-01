@@ -21,14 +21,18 @@ def get_volunteer(id):
 @bp.route('/volunteers', methods=['POST'])
 def add_volunteer():
     """Create a new volunteer"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
     return VolunteerService.create(data)
 
 
 @bp.route('/volunteers/<int:id>', methods=['PUT'])
 def edit_volunteer(id):
     """Update a volunteer"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
     return VolunteerService.update(id, data)
 
 
@@ -55,14 +59,18 @@ def get_event(id):
 @bp.route('/events', methods=['POST'])
 def add_event():
     """Create a new event"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
     return EventService.create(data)
 
 
 @bp.route('/events/<int:id>', methods=['PUT'])
 def edit_event(id):
     """Update an event"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
     return EventService.update(id, data)
 
 
@@ -77,22 +85,30 @@ def remove_event(id):
 @bp.route('/match/find', methods=['POST'])
 def find_match():
     """Find best matching event for a volunteer"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
+
     vol_id = data.get('volunteer_id')
-    
     if not vol_id:
         return jsonify({'error': 'Volunteer ID required'}), 400
-    
+
     return MatchService.find_best_match(vol_id)
 
 
 @bp.route('/match', methods=['POST'])
 def make_match():
     """Create a match between volunteer and event"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
+
     vol_id = data.get('volunteer_id')
     event_id = data.get('event_id')
-    
+
+    if not vol_id or not event_id:
+        return jsonify({'error': 'volunteer_id and event_id are required'}), 400
+
     return MatchService.create_match(vol_id, event_id)
 
 
@@ -123,6 +139,12 @@ def remove_match(id):
 @bp.route('/matches/<int:id>/status', methods=['PUT'])
 def change_status(id):
     """Update match status"""
-    data = request.json
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({'error': 'Invalid or missing JSON body'}), 400
+
     status = data.get('status')
+    if not status:
+        return jsonify({'error': 'Status required'}), 400
+
     return MatchService.update_status(id, status)
