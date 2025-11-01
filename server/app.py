@@ -14,8 +14,8 @@ except Exception:
 def make_engine_from_env():
     host = os.getenv("DB_HOST", "127.0.0.1")
     port = os.getenv("DB_PORT", "3306")
-    name = os.getenv("DB_NAME", "EventMatchers")
-    user = os.getenv("DB_USER", "dev_user")
+    name = os.getenv("DB_NAME", "EventMatcher")
+    user = os.getenv("DB_USER", "root")
     pw   = quote_plus(os.getenv("DB_PASS", ""))  
 
 
@@ -26,10 +26,6 @@ def make_engine_from_env():
 app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config["ENGINE"] = make_engine_from_env()
-
-# JWT Configuration
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
-app.config["JWT_EXPIRATION_HOURS"] = int(os.getenv("JWT_EXPIRATION_HOURS", "24"))
 
 from .routes.auth import bp as auth_bp
 from .routes.manager import bp as manager_bp

@@ -3,7 +3,8 @@ from ..services.volunteerService import VolunteerService
 
 bp = Blueprint('volunteer', __name__)
 
-@bp.route('/history', methods=['GET'])
+@bp.route('/history', methods=['POST'])
 def get_volunteer_history():
     """Get volunteer history for the user"""
-    return VolunteerService.get_volunteer_history()
+    user_id = request.get_json().get('userId')
+    return VolunteerService.get_volunteer_history_user(user_id=user_id)

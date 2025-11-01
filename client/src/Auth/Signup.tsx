@@ -5,7 +5,7 @@ import PinePalLogo from "../assets/pineLogo.webp";
 import Home from "../assets/Volunteer_home.jpg";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { signup } from "../utils/auth";
+
 
 const STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA",
@@ -72,17 +72,25 @@ const Signup: React.FC = () => {
 
     try {
       setSubmitting(true);
-      
-      // Use the auth utility to handle JWT tokens
-      const data = await signup(form.name, form.email, form.password, form.state, form.skills);
-      
-      // Store user name for backward compatibility
-      localStorage.setItem("pp_user_name", data.user.name);
-      
-      // Redirect to homepage
-      navigate("/");
-    } catch (err: any) {
-      setMsg(err.message || "Signup failed. Please try again.");
+      const res = await fetch(`/api/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok) {
+        // Optionally stash a name for a welcome toast on the homepage
+        localStorage.setItem("pp_user_name", data?.user?.name ?? form.name);
+        localStorage.setItem("pp_user_id", data?.user?.id ?? "");
+        // Redirect to homepage
+        navigate("/");
+        return;
+      }
+
+      setMsg(data?.message || "Signup failed.");
+    } catch {
+      setMsg("Server error. Check that the backend is running and CORS is enabled.");
     } finally {
       setSubmitting(false);
     }

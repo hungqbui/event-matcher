@@ -4,7 +4,6 @@ from ..services.authService import AuthService
 
 bp = Blueprint("auth", __name__)  # app registers with url_prefix="/api"
 
-
 @bp.route("/signup", methods=["POST"])
 def signup():
     """

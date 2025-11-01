@@ -56,8 +56,17 @@ const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose 
 		desiredSkills: []
 	});
 
+	const [skills, setSkills] = useState<string[]>([]);
+
+	useEffect(() => {
+
+		eventUtils.fetchSkills().then(fetchedSkills => {
+			setSkills(fetchedSkills);
+		});
+	}, []);
+	
 	const [skillSearch, setSkillSearch] = useState("");
-	const filteredSkills = AVAILABLE_SKILLS.filter(skill => 
+	const filteredSkills = skills.filter(skill =>
 		skill.toLowerCase().includes(skillSearch.toLowerCase())
 	);
 
@@ -128,7 +137,7 @@ const EventManagementPopup: React.FC<Props> = ({ open, initial, onSave, onClose 
 					<label>
 						Date and Time
 						<input
-							type="time-local"
+							type="datetime-local"
 							name="time"
 							value={form.time}
 							onChange={handleChange}

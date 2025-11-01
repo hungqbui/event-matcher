@@ -1,9 +1,8 @@
 from flask import jsonify, current_app, request
-from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
 import json
 import re
-from middleware.auth import generate_token
+import hashlib
 
 users = [{"email": "test@example.com", "password": "1234", "name": "Test User"}]
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -80,7 +79,7 @@ class AuthService:
                 return jsonify({"message": "Email already exists"}), 400
 
             # insert user
-            pwd_hash = generate_password_hash(password)
+            pwd_hash = hashlib.sha256(password.encode()).hexdigest()
             conn.execute(
                 text("""
                     INSERT INTO users (name, email, password_hash, state)
@@ -101,19 +100,10 @@ class AuthService:
                             {"u": user_id, "s": sid}
                         )
 
-        # Generate JWT token
-        user_data = {
-            "id": user_id,
-            "name": name,
-            "email": email,
-            "role": "volunteer"  # default role
-        }
-        token = generate_token(user_data)
 
         return jsonify({
             "message": "Signup successful",
-            "token": token,
-            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills, "role": "volunteer"}
+            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills}
         }), 201
     
     @staticmethod
@@ -131,33 +121,46 @@ class AuthService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             row = conn.execute(text("""
-                SELECT id, name, email, password_hash, state, role
+                SELECT id, name, email, password_hash, state
                 FROM users
                 WHERE email = :email
                 LIMIT 1
             """), {"email": email}).mappings().first()
 
-        if not row or not check_password_hash(row["password_hash"], pw):
+            print(row)
+    
+            ad = conn.execute(text("""
+                SELECT * FROM admins, users WHERE users.email = :email AND admins.user_id = users.id LIMIT 1
+            """), {"email": email}).mappings().first()
+            
+            vl = conn.execute(text("""
+                SELECT * FROM volunteers, users WHERE users.email = :email AND users.id = volunteers.user_id LIMIT 1
+            """), {"email": email}).mappings().first()
+
+        # Verify password using SHA-256
+        pw_hash = hashlib.sha256(pw.encode()).hexdigest()
+        if not row or row["password_hash"] != pw_hash:
             return jsonify({"message": "Invalid credentials"}), 401
 
-        # Generate JWT token
-        user_data = {
-            "id": row["id"],
-            "name": row["name"],
-            "email": row["email"],
-            "role": row.get("role", "volunteer")  # default to volunteer if role not set
-        }
-        token = generate_token(user_data)
-
-        return jsonify({
+        print({
             "message": "Login successful",
-            "token": token,
             "user": {
                 "id": row["id"],
                 "name": row["name"],
                 "email": row["email"],
                 "state": row["state"],
-                "role": row.get("role", "volunteer")
+                "role": "admin" if ad else "volunteer" if vl else "none"
+            }
+        })
+
+        return jsonify({
+            "message": "Login successful",
+            "user": {
+                "id": row["id"],
+                "name": row["name"],
+                "email": row["email"],
+                "state": row["state"],
+                "role": "admin" if ad else "volunteer" if vl else "none"
             }
         }), 200
         

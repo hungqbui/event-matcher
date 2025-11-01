@@ -5,7 +5,6 @@ import VolunteerHome from "../assets/Volunteer_home.jpg";
 import PinePal from "../assets/pineLogo.webp";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { login } from "../utils/auth";
 
 const Login: React.FC = () => {
   const nav = useNavigate();
@@ -32,20 +31,29 @@ const Login: React.FC = () => {
 
     setSubmitting(true);
     try {
-      // Use the auth utility to handle JWT tokens
-      const data = await login(payload.email, payload.password);
-      
-      // Store user name for backward compatibility
-      localStorage.setItem("pp_user_name", data.user.name);
-      
-      // Redirect to homepage or admin panel based on role
-      if (data.user.role === 'admin') {
-        nav("/event-listing"); // or admin dashboard
-      } else {
-        nav("/");
+      // Login.tsx - in fetch options
+        const res = await fetch(`/api/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          // credentials: "include", // ← remove this
+          body: JSON.stringify(payload),
+        });
+
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data?.message || "Invalid email or password.");
+        return;
       }
-    } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.");
+
+      // Backend returns: { message, id, name, email, state }
+      localStorage.setItem("pp_user_name", data?.user.name ?? "");
+      localStorage.setItem("pp_user_id", data?.user.id ?? "");
+
+      nav("/"); // redirect to homepage
+    } catch {
+      setError("Network error. Ensure the server is running and CORS is enabled.");
     } finally {
       setSubmitting(false);
     }
