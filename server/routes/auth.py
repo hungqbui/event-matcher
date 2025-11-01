@@ -23,7 +23,6 @@ def login():
 def check_email():
     return AuthService.check_email()
 
-
 @bp.route("/skills", methods=["GET"])
 def list_skills():
     return AuthService.list_skills()

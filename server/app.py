@@ -14,9 +14,9 @@ except Exception:
 def make_engine_from_env():
     host = os.getenv("DB_HOST", "127.0.0.1")
     port = os.getenv("DB_PORT", "3306")
-    name = os.getenv("DB_NAME", "EventMatcher")
-    user = os.getenv("DB_USER", "root")
-    pw   = quote_plus(os.getenv("DB_PASS", ""))  
+    name = os.getenv("DB_NAME", "eventmatchers")
+    user = os.getenv("DB_USER", "dev_user")
+    pw   = quote_plus(os.getenv("DB_PASS", "Team15"))  
 
 
     url = f"mysql+pymysql://{user}:{pw}@{host}:{port}/{name}?charset=utf8mb4"
@@ -37,11 +37,11 @@ from .routes.volunteer_user import bp as volunteer_user_bp
 
 
 app.register_blueprint(auth_bp,          url_prefix="/api")
+app.register_blueprint(notifications_bp, url_prefix="/api")
+app.register_blueprint(profile_bp,       url_prefix="/api")
+app.register_blueprint(matching_bp,      url_prefix="/api")
 app.register_blueprint(manager_bp,       url_prefix="/api/manager")
-app.register_blueprint(notifications_bp, url_prefix="/api/notifications")
-app.register_blueprint(profile_bp,       url_prefix="/api/profile")
 app.register_blueprint(history_bp,       url_prefix="/api/history")
-app.register_blueprint(matching_bp,      url_prefix="/api/matching")
 app.register_blueprint(volunteer_user_bp,url_prefix="/api/volunteer_user")
 
 @app.get("/ping")

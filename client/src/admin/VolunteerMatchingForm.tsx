@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import AdminNavbar from "./adminnavbar";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 import "./VolunteerMatchingForm.css";
 
 interface Volunteer {
@@ -21,7 +24,7 @@ interface Event {
   current_volunteers?: number;
 }
 
-const API = "http://localhost:5000/api";
+const API = "/api";
 
 const VolunteerMatchingForm: React.FC = () => {
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
@@ -163,6 +166,9 @@ const VolunteerMatchingForm: React.FC = () => {
   }
 
   return (
+    <>
+    <Navbar /> 
+    <AdminNavbar />
     <div className="form-container">
       <h2>Volunteer Matching Form</h2>
 
@@ -316,6 +322,8 @@ const VolunteerMatchingForm: React.FC = () => {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 };
 

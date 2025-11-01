@@ -9,6 +9,7 @@ def get_notifications():
     """Get all notifications for the user"""
     # Check if we want unread only
     user_id = request.args.get('user_id')  # for now passed in query string
+    print("hit")
     if not user_id:
         return {'success': False, 'error': 'Missing user_id'}, 400
 
