@@ -6,6 +6,8 @@ export type Task = {
 	name: string;
 	completed: boolean;
 	score: number;
+	volunteer_id?: number;
+	event_id?: number;
 };
 
 export type VolunteerHistoryEventData = {
@@ -13,6 +15,7 @@ export type VolunteerHistoryEventData = {
 	volunteer_id: number;
 	name: string;
 	event_name: string;
+	event_id?: number;
 	time_label: string;
 	description: string;
 	location: string;
@@ -21,6 +24,7 @@ export type VolunteerHistoryEventData = {
 	created_at: string;
 	img?: string;
 	tasks?: Task[];
+	date?: string;
 };
 
 type Props = {

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import "./Login.css";
 import VolunteerHome from "../assets/Volunteer_home.jpg";
 import PinePal from "../assets/pineLogo.webp";
@@ -8,6 +9,7 @@ import Footer from "../components/Footer";
 
 const Login: React.FC = () => {
   const nav = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -19,41 +21,26 @@ const Login: React.FC = () => {
     if (submitting) return;
 
     setError(null);
-    const payload = {
-      email: email.trim().toLowerCase(),
-      password,
-    };
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
 
-    if (!payload.email || !payload.password) {
+    if (!trimmedEmail || !trimmedPassword) {
       setError("Please enter both email and password.");
       return;
     }
 
     setSubmitting(true);
     try {
-      // Login.tsx - in fetch options
-        const res = await fetch(`/api/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          // credentials: "include", // ← remove this
-          body: JSON.stringify(payload),
-        });
-
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setError(data?.message || "Invalid email or password.");
-        return;
-      }
-
-      // Backend returns: { message, id, name, email, state }
-      localStorage.setItem("pp_user_name", data?.user.name ?? "");
-      localStorage.setItem("pp_user_id", data?.user.id ?? "");
+      await login(trimmedEmail, trimmedPassword);
+      
+      // Store legacy fields for backward compatibility
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem("pp_user_name", userData.name || "");
+      localStorage.setItem("pp_user_id", userData.id || "");
 
       nav("/"); // redirect to homepage
-    } catch {
-      setError("Network error. Ensure the server is running and CORS is enabled.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Invalid email or password.");
     } finally {
       setSubmitting(false);
     }

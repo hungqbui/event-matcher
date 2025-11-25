@@ -12,4 +12,4 @@ def get_profile():
 def update_profile():
     from flask import request
     data = request.json
-    return ProfileService.update_profile(data)
+    return ProfileService.update_profile_legacy(data)

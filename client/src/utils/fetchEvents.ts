@@ -12,7 +12,7 @@ const getUserId = (): string | null => {
 // Regular user fetch - no auth required
 export const fetchAllEvents = async (): Promise<EventData[]> => {
     try {
-        const response = await fetch(`api/events`);
+        const response = await fetch(`/api/events`);
         if (!response.ok) {
             throw new Error('Failed to fetch events');
         }
@@ -31,7 +31,7 @@ export const fetchAllEventsAdmin = async (): Promise<EventData[]> => {
     }
 
     try {
-        const response = await fetch(`api/manager/listevents`, {
+        const response = await fetch(`/api/manager/listevents`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -66,7 +66,7 @@ export const createEvent = async (eventData: EventData): Promise<EventData> => {
     }
 
     try {
-        const response = await fetch(`api/manager/events`, {
+        const response = await fetch(`/api/manager/events`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ export const updateEvent = async (id: number, eventData: Partial<EventData>): Pr
     }
 
     try {
-        const response = await fetch(`api/manager/events/${id}`, {
+        const response = await fetch(`/api/manager/events/${id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -138,7 +138,7 @@ export const deleteEvent = async (id: number): Promise<void> => {
     }
 
     try {
-        const response = await fetch(`api/manager/events/${id}`, {
+        const response = await fetch(`/api/manager/events/${id}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export const fetchHistoryEvents = async (): Promise<VolunteerHistoryEventData[]>
     }
 
     try {
-        const response = await fetch(`api/volunteer_user/history`, {
+        const response = await fetch(`/api/volunteer_user/history`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -190,7 +190,7 @@ export const fetchHistoryEvents = async (): Promise<VolunteerHistoryEventData[]>
 
 export const fetchSkills = async (): Promise<string[]> => {
     try {
-        const response = await fetch(`api/skills`);
+        const response = await fetch(`/api/skills`);
         if (!response.ok) {
             throw new Error('Failed to fetch skills');
         }

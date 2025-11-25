@@ -1,0 +1,146 @@
+:root {
+  --green1: #86E7B8;
+  --green2: #93FF96;
+  --green3: #B2FFA8;
+  --yellow: #D0FFB7;
+  --cream: #F2F5DE;
+  --black: #000000;
+}
+
+.leaderboard-page {
+  min-height: calc(100vh - 150px);
+  background: var(--cream);
+  padding: 2rem 0;
+  font-family: var(--font-fam), sans-serif;
+}
+
+.leaderboard-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--black);
+  margin-bottom: 0.5rem;
+}
+
+.leaderboard-subtitle {
+  text-align: center;
+  color: var(--black);
+  opacity: 0.7;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.leaderboard-loading,
+.leaderboard-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--black);
+  opacity: 0.6;
+  font-size: 1.1rem;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--cream);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.leaderboard-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(134, 231, 184, 0.3);
+}
+
+.leaderboard-item--top1 {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  border-color: #FFD700;
+  transform: scale(1.02);
+}
+
+.leaderboard-item--top2 {
+  background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+  border-color: #C0C0C0;
+}
+
+.leaderboard-item--top3 {
+  background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+  border-color: #CD7F32;
+}
+
+.leaderboard-rank {
+  font-size: 2rem;
+  font-weight: 700;
+  min-width: 60px;
+  text-align: center;
+  color: var(--black);
+}
+
+.leaderboard-name {
+  flex: 1;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--black);
+  margin-left: 1rem;
+}
+
+.leaderboard-points {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.points-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--black);
+}
+
+.points-label {
+  font-size: 0.9rem;
+  color: var(--black);
+  opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+  .leaderboard-container {
+    padding: 1.5rem;
+  }
+
+  .leaderboard-title {
+    font-size: 2rem;
+  }
+
+  .leaderboard-item {
+    padding: 1rem;
+  }
+
+  .leaderboard-rank {
+    font-size: 1.5rem;
+    min-width: 50px;
+  }
+
+  .leaderboard-name {
+    font-size: 1.1rem;
+  }
+
+  .points-value {
+    font-size: 1.5rem;
+  }
+}

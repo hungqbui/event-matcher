@@ -271,9 +271,10 @@ class MatchService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT m.*, v.name AS volunteer_name, e.name AS event_name
+                SELECT m.*, u.name AS volunteer_name, e.name AS event_name
                 FROM matches m
                 JOIN volunteers v ON m.volunteer_id = v.id
+                JOIN users u ON v.user_id = u.id
                 JOIN events e ON m.event_id = e.id
             """))
         matches = result.mappings().all()
@@ -285,9 +286,10 @@ class MatchService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT m.*, v.name AS volunteer_name, e.name AS event_name
+                SELECT m.*, u.name AS volunteer_name, e.name AS event_name
                 FROM matches m
                 JOIN volunteers v ON m.volunteer_id = v.id
+                JOIN users u ON v.user_id = u.id
                 JOIN events e ON m.event_id = e.id
                 WHERE m.volunteer_id = :vol_id
         """), {"vol_id": vol_id})
@@ -300,9 +302,10 @@ class MatchService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT m.*, v.name AS volunteer_name, e.name AS event_name
+                SELECT m.*, u.name AS volunteer_name, e.name AS event_name
                 FROM matches m
                 JOIN volunteers v ON m.volunteer_id = v.id
+                JOIN users u ON v.user_id = u.id
                 JOIN events e ON m.event_id = e.id
                 WHERE m.event_id = :event_id
             """), {"event_id": event_id})

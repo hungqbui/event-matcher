@@ -244,6 +244,8 @@ class ProfileService:
     def update_profile_legacy(data):
         user_id = data.get('userId')
 
+        print(data)
+        
         try:
             # Validate required
             required = ['fullName', 'address1', 'city', 'state', 'zip']
@@ -256,7 +258,20 @@ class ProfileService:
 
             engine = current_app.config["ENGINE"]
             
-            with engine.connect() as conn:
+            with engine.begin() as conn:
+                # Check if user_id is present
+                if not user_id:
+                    return {"error": "User ID is required"}, 400
+                
+                # Verify user exists
+                user_exists = conn.execute(
+                    text("SELECT id FROM users WHERE id = :user_id"), 
+                    {"user_id": user_id}
+                ).first()
+                
+                if not user_exists:
+                    return {"error": f"User with ID {user_id} not found"}, 404
+                    
                 conn.execute(text("""
                     INSERT INTO profiles (user_id, full_name, address1, address2, city, state, zip, preferences, availability)
                     VALUES (:user_id, :full_name, :address1, :address2, :city, :state, :zip, :preferences, :availability)
@@ -276,16 +291,26 @@ class ProfileService:
                     "availability": json.dumps(data.get('availability', []))
                 })
 
-            # Sync skills
+                # Sync skills - delete old and insert new
                 conn.execute(text("DELETE FROM user_skills WHERE user_id = :user_id"), {"user_id": user_id})
+                
                 for skill in data.get('skills', []):
+                    # Insert skill if it doesn't exist
                     conn.execute(text("INSERT IGNORE INTO skills (name) VALUES (:name)"), {"name": skill})
-                    conn.execute(text("SELECT id FROM skills WHERE name = :name"), {"name": skill})
-                    skill_id = conn.fetchone()[0]
-                    conn.execute(text("INSERT IGNORE INTO user_skills (user_id, skill_id) VALUES (:user_id, :skill_id)"), {"user_id": user_id, "skill_id": skill_id})
+                    
+                    # Get skill ID
+                    skill_row = conn.execute(
+                        text("SELECT id FROM skills WHERE name = :name"), 
+                        {"name": skill}
+                    ).first()
+                    
+                    if skill_row:
+                        skill_id = skill_row[0]
+                        conn.execute(
+                            text("INSERT IGNORE INTO user_skills (user_id, skill_id) VALUES (:user_id, :skill_id)"), 
+                            {"user_id": user_id, "skill_id": skill_id}
+                        )
 
-                conn.commit()
             return {"message": "Profile saved!"}, 200
         except Exception as e:
-            conn.rollback()
             return {"error": str(e)}, 500

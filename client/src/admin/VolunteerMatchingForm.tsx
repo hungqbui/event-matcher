@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import AdminNavbar from "./adminnavbar";
+import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import "./VolunteerMatchingForm.css";
@@ -22,11 +22,13 @@ interface Event {
   location?: string;
   max_volunteers?: number;
   current_volunteers?: number;
+  ownerid?: number;
 }
 
 const API = "/api";
 
 const VolunteerMatchingForm: React.FC = () => {
+  const { user } = useAuth();
   const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedVol, setSelectedVol] = useState("");
@@ -36,12 +38,19 @@ const VolunteerMatchingForm: React.FC = () => {
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (user?.id) {
+      loadData();
+    }
+  }, [user?.id]);
 
   const loadData = async () => {
     setLoading(true);
     try {
+      if (!user?.id) {
+        setError("User not authenticated");
+        return;
+      }
+      
       const [volRes, evtRes] = await Promise.all([
         fetch(`${API}/volunteers`),
         fetch(`${API}/events`),
@@ -52,15 +61,23 @@ const VolunteerMatchingForm: React.FC = () => {
       }
 
       const vols = await volRes.json();
-
       const evts = await evtRes.json();
 
-      setVolunteers(vols);
+      // Filter events: only upcoming events created by this admin
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const filteredEvents = evts.filter((evt: Event) => {
+        const eventDate = new Date(evt.date);
+        const isUpcoming = eventDate >= today;
+        const isOwnedByAdmin = evt.ownerid?.toString() === user.id.toString();
+        return isUpcoming && isOwnedByAdmin;
+      });
 
-      setEvents(evts);
+      setVolunteers(vols);
+      setEvents(filteredEvents);
     } catch (err) {
       console.error(err);
-
       setError("Could not connect to the server.");
     } finally {
       setLoading(false);
@@ -168,7 +185,6 @@ const VolunteerMatchingForm: React.FC = () => {
   return (
     <>
     <Navbar /> 
-    <AdminNavbar />
     <div className="form-container">
       <h2>Volunteer Matching Form</h2>
 

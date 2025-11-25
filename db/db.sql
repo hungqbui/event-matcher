@@ -1,4 +1,7 @@
+DROP DATABASE eventmatcher;
 CREATE DATABASE IF NOT EXISTS eventmatcher;
+
+USE eventmatcher;
 
 CREATE TABLE IF NOT EXISTS users (
   id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -35,7 +38,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   state        CHAR(2)         NOT NULL,
   zip          VARCHAR(20)     NOT NULL,
   preferences  TEXT            NULL,                      -- "Prefer outdoor activities"
-  availability JSON            NULL,                      -- e.g., ["2025-10-01","2025-10-15"]
+  availability JSON            NULL,                      -- e.g., ["Monday","Wednesday","Friday"]
   updated_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id),
   CONSTRAINT fk_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -61,7 +64,6 @@ CREATE TABLE IF NOT EXISTS volunteers (
   availability VARCHAR(100)    NOT NULL,         -- e.g., "weekends","weekdays","evenings","flexible"
   created_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_volunteers_email (email),
   KEY idx_volunteers_user (user_id),
   CONSTRAINT fk_volunteers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -133,13 +135,15 @@ CREATE TABLE IF NOT EXISTS volunteer_history (
 
 CREATE TABLE IF NOT EXISTS history_tasks (
   id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  history_id   BIGINT UNSIGNED NOT NULL,
+  history_id   BIGINT UNSIGNED DEFAULT NULL,
   name         VARCHAR(160)    NOT NULL,
   completed    BOOLEAN         NOT NULL DEFAULT FALSE,
   volunteer_id BIGINT UNSIGNED DEFAULT NULL,
+  event_id   BIGINT UNSIGNED DEFAULT NULL,
   score        INT             NULL,
   PRIMARY KEY (id),
   KEY (history_id),
   FOREIGN KEY (history_id) REFERENCES volunteer_history(id) ON DELETE CASCADE,
-  FOREIGN KEY (volunteer_id) REFERENCES users(id) ON DELETE SET NULL
+  FOREIGN KEY (volunteer_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
 );

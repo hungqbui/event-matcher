@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EventClickable from "../components/EventClickable";
 import EventManagementPopup, { type EventData } from "../components/EventManagementPopup";
+import Navbar from "../components/Navbar";
 import "./EventListing.css";
 
 import * as eventUtils from "../utils/fetchEvents.ts"
@@ -31,6 +32,7 @@ const EventListingPage: React.FC = () => {
 
 	return (
 		<div className="el-page">
+			<Navbar />
 			<h2 style={{ color: "black" }}>Your Events</h2>
 			<div className="el-grid">
 				{events.map((ev) => (

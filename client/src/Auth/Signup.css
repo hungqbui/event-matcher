@@ -57,11 +57,61 @@ html, body, #root {
   margin-bottom: 1rem;
 }
 
+.signup-type-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  background: rgba(255, 255, 255, 0.3);
+  padding: 0.3rem;
+  border-radius: 25px;
+}
+
+.toggle-btn {
+  padding: 0.6rem 2rem;
+  border: none;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--black);
+  transition: all 0.3s;
+}
+
+.toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.toggle-btn.active {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 .signup-title {
   font-family: 'Oswald', sans-serif;
   font-size: 2rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   font-weight: bold;
+}
+
+.admin-note {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--black);
+  text-align: center;
+}
+
+.email-warning {
+  color: #d32f2f;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
 .signup-form {

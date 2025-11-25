@@ -57,7 +57,14 @@
   font-family: 'Oswald', sans-serif;
   font-size: 1.8rem;
   color: var(--black);
+  border-bottom: #00000000 1px solid;  
   margin: 0;
+}
+
+.admin-logo-text:hover {
+  cursor: pointer;
+  border-bottom: #000000 1px solid; 
+  transition: all 0.3s ease;
 }
 
 .admin-nav-tabs {
@@ -83,7 +90,23 @@
 
 .admin-auth-buttons {
   display: flex;
+  align-items: center;
   gap: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, var(--green1) 0%, var(--green2) 100%);
+  color: var(--black);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  font-size: 1rem;
+}
+
+.admin-auth-buttons:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(134, 231, 184, 0.4);
+  background: linear-gradient(135deg, var(--green2) 0%, var(--green3) 100%);
 }
 
 .admin-nav-btn {

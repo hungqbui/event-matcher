@@ -55,12 +55,19 @@ def _ensure_skill_ids(conn, skills):
 class AuthService:
     @staticmethod
     def signup(data):
-        required = ["name", "email", "password", "state", "skills"]
+        email = str(data.get("email") or "").strip().lower()
+        is_admin = email.endswith("@pine.edu")
+        
+        # Required fields vary based on user type
+        if is_admin:
+            required = ["name", "email", "password", "state"]
+        else:
+            required = ["name", "email", "password", "state", "skills"]
+        
         missing = [k for k in required if not data.get(k)]
         if missing:
             return jsonify({"message": f"{', '.join(missing)} is required"}), 400
 
-        email = str(data["email"]).strip().lower()
         if not EMAIL_RE.match(email):
             return jsonify({"message": "Invalid email format"}), 400
 
@@ -70,7 +77,7 @@ class AuthService:
 
         name = str(data["name"]).strip()
         state = str(data.get("state") or "").strip()[:2].upper()
-        skills = _normalize_skills(data.get("skills"))
+        skills = _normalize_skills(data.get("skills")) if not is_admin else []
 
         engine = current_app.config["ENGINE"]
         with engine.begin() as conn:
@@ -89,6 +96,22 @@ class AuthService:
             )
             user_id = conn.execute(text("SELECT LAST_INSERT_ID()")).scalar()
 
+            # create profile with minimal required fields
+            conn.execute(
+                text("""
+                    INSERT INTO profiles (user_id, full_name, address1, city, state, zip)
+                    VALUES (:user_id, :full_name, :address1, :city, :state, :zip)
+                """),
+                {
+                    "user_id": user_id,
+                    "full_name": name,
+                    "address1": "Not provided",
+                    "city": "Not provided",
+                    "state": state or "TX",
+                    "zip": "00000"
+                }
+            )
+
             # upsert skills and link
             if skills:
                 name_to_id = _ensure_skill_ids(conn, skills)
@@ -100,10 +123,23 @@ class AuthService:
                             {"u": user_id, "s": sid}
                         )
 
+            # Check if email ends with @pine.edu and create admin entry
+            if email.endswith("@pine.edu"):
+                conn.execute(
+                    text("INSERT INTO admins (user_id) VALUES (:user_id)"),
+                    {"user_id": user_id}
+                )
+            else:
+                # Non-admin users are volunteers - create volunteer record
+                conn.execute(
+                    text("INSERT INTO volunteers (user_id, availability) VALUES (:user_id, :availability)"),
+                    {"user_id": user_id, "availability": "flexible"}
+                )
+
 
         return jsonify({
             "message": "Signup successful",
-            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills}
+            "user": {"id": user_id, "name": name, "email": email, "state": state, "skills": skills, "role": "admin" if email.endswith("@pine.edu") else "volunteer"}
         }), 201
     
     @staticmethod

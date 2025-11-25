@@ -9,7 +9,11 @@ import TreePlant from "./assets/TreePlant.jpg";
 import DisasterRelief from "./assets/DisasterRelief.jpg";
 import BloodDrive from "./assets/BloodDrive.webp";
 import YouthMentor from "./assets/YouthMentor.jpg";
+
+import { useNavigate } from "react-router-dom";
+
 const HomePage = () => {
+  const navigate = useNavigate();
   return (
     <>
       <Navbar />
@@ -25,7 +29,9 @@ const HomePage = () => {
               Thank you for caring about our community. Your time and skills
               make all the difference — now more than ever!
             </p>
-            <button className="primary-btn">Find Opportunities</button>
+            <button className="primary-btn" onClick={() => {
+              navigate("/events");
+            }}>Find Opportunities</button>
           </div>
         </section>
 

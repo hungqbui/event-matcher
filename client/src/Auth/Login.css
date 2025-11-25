@@ -35,9 +35,8 @@ html, body, #root {
   position: relative;
   background: linear-gradient(135deg, var(--green1), var(--green2));
   border-radius: 25px;
-  padding: 4rem 3rem;  
+  padding: 3rem 3rem;  
   width: 500px;         
-  height: 650px;        /* taller card */
   max-width: 90%;
   text-align: center;
   box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
@@ -45,7 +44,6 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* center content vertically */
   transition: transform 0.4s, box-shadow 0.4s;
 }
 
@@ -54,27 +52,28 @@ html, body, #root {
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
 }
 
-.login-card h2 {
+.login-title {
   font-family: 'Oswald', sans-serif;
-  font-size: 3rem;
-  margin-bottom: 2rem;
+  font-size: 2.5rem;
+  margin: 1rem 0 1.5rem 0;
   color: var(--black);
 }
 
 .login-form {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  width: 80%;   
+  align-items: stretch;
+  gap: 1.2rem;
+  width: 100%;   
 }
 
 .login-form input {
   width: 100%;
   padding: 0.9rem;      
-  font-size: 1.1rem;
+  font-size: 1rem;
   border-radius: 12px;
   border: 2px solid var(--green2);
+  box-sizing: border-box;
   transition: border 0.3s, box-shadow 0.3s;
 }
 
@@ -85,16 +84,18 @@ html, body, #root {
 }
 
 .login-btn {
-  margin-top: 2rem;      
+  margin-top: 0.5rem;      
   padding: 1rem 2rem;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: bold;
-  border-radius: 15px;
+  border-radius: 12px;
   border: none;
   cursor: pointer;
   background: var(--green1);
   color: var(--black);
   transition: background 0.3s, transform 0.2s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .login-btn:hover {
@@ -103,7 +104,7 @@ html, body, #root {
 }
 
 .signup-link {
-  margin-top: 1.5rem;
+  margin-top: 1rem;
   font-size: 0.95rem;
   color: var(--black);
 }
@@ -121,19 +122,76 @@ html, body, #root {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 
 .login-logo {
-  width: 180px;
-  height: 180px;
+  width: 120px;
+  height: 120px;
   object-fit: contain;
   margin-bottom: 0.5rem;
 }
 
 .login-name {
   font-family: 'Oswald', sans-serif;
-  font-size: 2rem;
+  font-size: 1.8rem;
   color: var(--black);
-  margin-bottom: -40px;
+  margin: 0;
+}
+
+.password-field {
+  position: relative;
+  width: 100%;
+}
+
+.password-field input {
+  width: 100%;
+  padding-right: 4.5rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--green2);
+  border: 1px solid var(--green1);
+  border-radius: 8px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--black);
+  transition: background 0.2s;
+}
+
+.toggle-password:hover {
+  background: var(--green1);
+}
+
+.toggle-password:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-error {
+  color: #d32f2f;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
