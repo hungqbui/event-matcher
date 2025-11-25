@@ -1,346 +1,317 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import "./volunteerhistory.css";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import "./VolunteerMatchingForm.css";
+import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
-interface Volunteer {
-  id: number;
+type VolunteerRecord = {
+  user_id: number;
   name: string;
-  email?: string;
-  phone?: string;
-  skills: string | string[]; // backend may return CSV or array;
-  availability: string;
-}
-
-interface Event {
-  id: number;
-  name: string;
-  description?: string;
-  requirements: string | string[];
+  eventName: string;
   date: string;
-  location?: string;
-  max_volunteers?: number;
-  current_volunteers?: number;
-  ownerid?: number;
-}
+  location: string;
+  description: string;
+  event_id: number;
+  volunteer_id: number;
+};
 
-const API = "/api";
+type Task = {
+  id: number;
+  name: string;
+  score: number;
+  completed: boolean;
+  volunteer_id: number;
+  event_id: number;
+};
 
-const VolunteerMatchingForm: React.FC = () => {
+type TaskModalData = {
+  volunteer: VolunteerRecord;
+  tasks: Task[];
+};
+
+export default function VolunteerHistory() {
   const { user } = useAuth();
-  const [volunteers, setVolunteers] = useState<Volunteer[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [selectedVol, setSelectedVol] = useState("");
-  const [selectedEvt, setSelectedEvt] = useState("");
+  const [records, setRecords] = useState<VolunteerRecord[]>([]);
+  const [taskModal, setTaskModal] = useState<TaskModalData | null>(null);
+  const [ratings, setRatings] = useState<{ [key: number]: number }>({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
+  // ===============================
+  // 📂 CSV DOWNLOAD
+  // ===============================
+  const downloadCSV = () => {
+    window.open(
+      `http://localhost:5000/api/report/volunteer-history/csv?admin_user_id=${user?.id}`,
+      "_blank"
+    );
+  };
+
+  // ===============================
+  // 🧾 PDF DOWNLOAD
+  // ===============================
+  const generatePDF = () => {
+    const table = document.querySelector(".vh-table") as HTMLElement;
+    if (!table) return alert("No data to export.");
+
+    html2canvas(table).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 190;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
+      pdf.save("volunteer_report.pdf");
+    });
+  };
+
+  // ===============================
+  // LOAD HISTORY RECORDS
+  // ===============================
   useEffect(() => {
-    if (user?.id) {
-      loadData();
-    }
+    if (!user?.id) return;
+
+    fetch(
+      `http://localhost:5000/api/admin/volunteer-attendance?admin_user_id=${user.id}`
+    )
+      .then((res) => res.json())
+      .then((data) => setRecords(data))
+      .catch((err) => console.error("Error:", err));
   }, [user?.id]);
 
-  const loadData = async () => {
-    setLoading(true);
+  // ===============================
+  // VIEW TASKS IN MODAL
+  // ===============================
+  const handleViewTasks = async (record: VolunteerRecord) => {
     try {
-      if (!user?.id) {
-        setError("User not authenticated");
-        return;
-      }
-      
-      const [volRes, evtRes] = await Promise.all([
-        fetch(`${API}/volunteers`),
-        fetch(`${API}/events`),
-      ]);
+      const response = await fetch(
+        `http://localhost:5000/api/volunteer-tasks/${record.volunteer_id}/${record.event_id}`
+      );
+      const tasks = await response.json();
+      setTaskModal({ volunteer: record, tasks });
 
-      if (!volRes.ok || !evtRes.ok) {
-        throw new Error("Failed to load data");
-      }
-
-      const vols = await volRes.json();
-      const evts = await evtRes.json();
-
-      // Filter events: only upcoming events created by this admin
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const filteredEvents = evts.filter((evt: Event) => {
-        const eventDate = new Date(evt.date);
-        const isUpcoming = eventDate >= today;
-        const isOwnedByAdmin = evt.ownerid?.toString() === user.id.toString();
-        return isUpcoming && isOwnedByAdmin;
+      const initialRatings: { [key: number]: number } = {};
+      tasks.forEach((task: Task) => {
+        initialRatings[task.id] = 100;
       });
-
-      setVolunteers(vols);
-      setEvents(filteredEvents);
+      setRatings(initialRatings);
     } catch (err) {
-      console.error(err);
-      setError("Could not connect to the server.");
-    } finally {
-      setLoading(false);
+      console.error("Error fetching tasks:", err);
+      alert("Failed to load tasks");
     }
   };
 
-  const handleVolChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.value;
-    setSelectedVol(id);
-    setSelectedEvt("");
-    setError("");
-    setSuccess("");
+  // ===============================
+  // RATE TASK
+  // ===============================
+  const handleRateTask = async (taskId: number) => {
+    const ratingPercent = ratings[taskId];
+    if (ratingPercent === undefined) return;
 
-    if (!id) return;
-
+    setLoading(true);
     try {
-      const res = await fetch(`${API}/match/find`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ volunteer_id: parseInt(id) }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        if (data.event) {
-          setSelectedEvt(data.event.id.toString());
-        } else {
-          setError("No suitable events found.");
+      const response = await fetch(
+        `http://localhost:5000/api/task/${taskId}/rate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rating_percent: ratingPercent }),
         }
-      } else if (res.status === 404) {
-        setError("No matching events found");
-      }
-    } catch (err) {
-      console.error(err);
-      setError("Error finding match.");
-    }
-  };
+      );
 
-  const handleSubmit = async () => {
-    if (!selectedVol || !selectedEvt) {
-      setError("Select volunteer and event");
-      return;
-    }
+      if (response.ok) {
+        const result = await response.json();
+        alert(
+          `Task rated successfully! Score: ${result.actual_score}/${result.original_score} (${result.rating_percent}%)`
+        );
 
-    setLoading(true);
-    setError("");
-    setSuccess("");
-
-    try {
-      const res = await fetch(`${API}/match`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          volunteer_id: parseInt(selectedVol),
-          event_id: parseInt(selectedEvt),
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
-        const evt = events.find((e) => e.id === parseInt(selectedEvt));
-        setSuccess(`${vol?.name} successfully matched to ${evt?.name}!`);
-
-        await loadData();
-
-        setTimeout(() => {
-          setSelectedVol("");
-          setSelectedEvt("");
-          setSuccess("");
-        }, 3000);
+        if (taskModal) {
+          const updatedResponse = await fetch(
+            `http://localhost:5000/api/volunteer-tasks/${taskModal.volunteer.volunteer_id}/${taskModal.volunteer.event_id}`
+          );
+          const updatedTasks = await updatedResponse.json();
+          setTaskModal({ ...taskModal, tasks: updatedTasks });
+        }
       } else {
-        setError(data.error || "Failed to create match.");
+        const error = await response.json();
+        alert(error.error || "Failed to rate task");
       }
-    } catch (err) {
-      console.error(err);
-      setError("Error creating match.");
     } finally {
       setLoading(false);
     }
   };
 
-  const reset = () => {
-    setSelectedVol("");
-    setSelectedEvt("");
-    setError("");
-    setSuccess("");
+  const closeModal = () => {
+    setTaskModal(null);
+    setRatings({});
   };
-
-  if (loading && volunteers.length === 0) {
-    return <div className="loading">Loading...</div>;
-  }
-
-  const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
-  const evt = events.find((e) => e.id === parseInt(selectedEvt));
-
-  const formatList = (value: string | string[]) => {
-    if (Array.isArray(value)) return value.join(", ");
-    return value;
-  };
-
-  if (loading && volunteers.length === 0) {
-    return <div className="loading">Loading volunteers and events...</div>;
-  }
 
   return (
     <>
-    <Navbar /> 
-    <div className="form-container">
-      <h2>Volunteer Matching Form</h2>
+      <Navbar />
+      <div className="volunteer-history-page">
+        <div className="volunteer-history">
+          <h1>Volunteer Participation History</h1>
+          <p className="vh-subtitle">Volunteers who attended your events</p>
 
-      {error && (
-        <div
-          style={{
-            background: "#fee",
-            border: "1px solid #fcc",
-            color: "#c00",
-            padding: "10px",
-            borderRadius: "5px",
-            marginBottom: "15px",
-          }}
-        >
-          {error}
-        </div>
-      )}
+          {/* =============================== */}
+          {/* 📁 REPORT PANEL */}
+          {/* =============================== */}
+          <div className="vh-report-panel">
+            <h2>Generate Report</h2>
 
-      {success && (
-        <div
-          style={{
-            background: "#efe",
-            border: "1px solid #cfc",
-            color: "#060",
-            padding: "10px",
-            borderRadius: "5px",
-            marginBottom: "15px",
-          }}
-        >
-          {success}
-        </div>
-      )}
+            <button className="vh-download-btn" onClick={downloadCSV}>
+              📄 Download CSV
+            </button>
 
-      <div className="matching-form">
-        <div className="form-group">
-          <label htmlFor="vol-select">Volunteer:</label>
-          <select
-            id="vol-select"
-            value={selectedVol}
-            onChange={handleVolChange}
-            className="form-select"
-            disabled={loading}
-          >
-            <option value="">Select volunteer...</option>
-            {volunteers.map((v) => (
-              <option key={v.id} value={v.id}>
-                {v.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <button className="vh-download-btn" onClick={generatePDF}>
+              🧾 Download PDF
+            </button>
+          </div>
 
-        <div className="form-group">
-          <label htmlFor="evt-select">Event:</label>
-          <select
-            id="evt-select"
-            value={selectedEvt}
-            onChange={(e) => setSelectedEvt(e.target.value)}
-            className="form-select"
-            disabled={loading}
-          >
-            <option value="">Select event...</option>
-            {events.map((e) => (
-              <option key={e.id} value={e.id}>
-                {e.name} - {e.date}{" "}
-                {e.max_volunteers && e.current_volunteers !== undefined
-                  ? `(${e.current_volunteers}/${e.max_volunteers})`
-                  : ""}
-              </option>
-            ))}
-          </select>
+          {/* =============================== */}
+          {/* TABLE */}
+          {/* =============================== */}
+          {records.length === 0 ? (
+            <p className="vh-empty">No volunteer attendance records yet.</p>
+          ) : (
+            <table className="vh-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Event Name</th>
+                  <th>Date</th>
+                  <th>Location</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {records.map((record, index) => (
+                  <tr key={index}>
+                    <td>{record.name}</td>
+                    <td>{record.eventName}</td>
+                    <td>{new Date(record.date).toLocaleDateString()}</td>
+                    <td>{record.location}</td>
+                    <td className="vh-description">{record.description}</td>
+                    <td>
+                      <button
+                        className="vh-view-tasks-btn"
+                        onClick={() => handleViewTasks(record)}
+                      >
+                        View Tasks
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
 
-        {vol && (
-          <div className="volunteer-info">
-            <h3>Volunteer Details:</h3>
-            <div className="info-card">
-              <p>
-                <strong>Name:</strong> {vol.name}
-              </p>
-              {vol.email && (
-                <p>
-                  <strong>Email:</strong> {vol.email}
+        {/* =============================== */}
+        {/* TASK MODAL */}
+        {/* =============================== */}
+        {taskModal && (
+          <div className="vh-modal-backdrop" onClick={closeModal}>
+            <div
+              className="vh-modal"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="vh-modal-header">
+                <h2>Tasks for {taskModal.volunteer.name}</h2>
+                <p className="vh-modal-subtitle">
+                  {taskModal.volunteer.eventName}
                 </p>
-              )}
-              {vol.phone && (
-                <p>
-                  <strong>Phone:</strong> {vol.phone}
-                </p>
-              )}
-              <p>
-                <strong>Skills:</strong> {formatList(vol.skills)}
-              </p>
-              <p>
-                <strong>Availability:</strong> {vol.availability}
-              </p>
+                <button className="vh-modal-close" onClick={closeModal}>
+                  &times;
+                </button>
+              </div>
+
+              <div className="vh-modal-body">
+                {taskModal.tasks.length === 0 ? (
+                  <p className="vh-no-tasks">
+                    No tasks claimed for this event.
+                  </p>
+                ) : (
+                  <div className="vh-tasks-list">
+                    {taskModal.tasks.map((task) => (
+                      <div
+                        key={task.id}
+                        className={`vh-task-card ${
+                          task.completed ? "completed" : ""
+                        }`}
+                      >
+                        <div className="vh-task-header">
+                          <h3>{task.name}</h3>
+                          <span className="vh-task-score">
+                            Max Score: {task.score}
+                          </span>
+                        </div>
+
+                        {task.completed ? (
+                          <div className="vh-task-completed">
+                            <span className="vh-completed-badge">
+                              ✓ Completed & Rated
+                            </span>
+                            <span className="vh-final-score">
+                              Final Score: {task.score}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="vh-task-rating">
+                            <label htmlFor={`rating-${task.id}`}>
+                              Rating: {ratings[task.id] || 100}%
+                            </label>
+
+                            <input
+                              id={`rating-${task.id}`}
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={ratings[task.id] || 100}
+                              onChange={(e) =>
+                                setRatings({
+                                  ...ratings,
+                                  [task.id]: parseInt(e.target.value),
+                                })
+                              }
+                              className="vh-rating-slider"
+                            />
+
+                            <div className="vh-rating-info">
+                              <span>
+                                Score:{" "}
+                                {Math.round(
+                                  (task.score *
+                                    (ratings[task.id] || 100)) /
+                                    100
+                                )}
+                                /{task.score}
+                              </span>
+                            </div>
+
+                            <button
+                              className="vh-rate-btn"
+                              onClick={() => handleRateTask(task.id)}
+                              disabled={loading}
+                            >
+                              {loading ? "Rating..." : "Mark Complete & Rate"}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
-
-        {evt && (
-          <div className="event-info">
-            <h3>Event Details:</h3>
-            <div className="info-card">
-              <p>
-                <strong>Event:</strong> {evt.name}
-              </p>
-              {evt.description && (
-                <p>
-                  <strong>Description:</strong> {evt.description}
-                </p>
-              )}
-              <p>
-                <strong>Date:</strong> {evt.date}
-              </p>
-              {evt.location && (
-                <p>
-                  <strong>Location:</strong> {evt.location}
-                </p>
-              )}
-              <p>
-                <strong>Requirements:</strong> {formatList(evt.requirements)}
-              </p>
-              {evt.max_volunteers && (
-                <p>
-                  <strong>Volunteers:</strong> {evt.current_volunteers ?? 0}/
-                  {evt.max_volunteers}
-                </p>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="form-actions">
-          <button
-            type="button"
-            className="submit-btn"
-            onClick={handleSubmit}
-            disabled={loading || !selectedVol || !selectedEvt}
-          >
-            {loading ? "Matching..." : "Match Volunteer"}
-          </button>
-          <button
-            type="button"
-            className="reset-btn"
-            onClick={reset}
-            disabled={loading}
-          >
-            Reset
-          </button>
-        </div>
       </div>
-    </div>
-    <Footer />
+      <Footer />
     </>
   );
-};
-
-export default VolunteerMatchingForm;
+}

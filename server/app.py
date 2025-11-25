@@ -35,6 +35,7 @@ from .routes.volunteer_history import history_bp
 from .routes.volunteer_matching import bp as matching_bp
 from .routes.volunteer_user import bp as volunteer_user_bp
 from .routes.task import task_bp
+from .routes.report import report_bp
 
 
 app.register_blueprint(auth_bp,          url_prefix="/api")
@@ -45,6 +46,7 @@ app.register_blueprint(history_bp,       url_prefix="/api")
 app.register_blueprint(manager_bp,       url_prefix="/api/manager")
 app.register_blueprint(volunteer_user_bp,url_prefix="/api/volunteer_user")
 app.register_blueprint(task_bp,          url_prefix="/api/tasks")
+app.register_blueprint(report_bp, url_prefix="/api")
 
 @app.get("/ping")
 def ping():

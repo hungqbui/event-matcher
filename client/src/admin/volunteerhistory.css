@@ -336,3 +336,62 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* === Report Panel Styling (Green Theme) === */
+.vh-report-panel {
+  background: rgba(139, 217, 174, 0.25); /* soft green glass */
+  border: 1px solid rgba(139, 217, 174, 0.4);
+  padding: 22px 25px;
+  border-radius: 16px;
+  margin: 25px 0 35px 0;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.vh-report-panel h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #064f2a;
+}
+
+/* === Buttons (matching theme green) === */
+.vh-download-btn {
+  background: rgba(76, 175, 80, 0.9); /* same green as submit-btn */
+  color: white;
+  padding: 12px 22px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.vh-download-btn:hover {
+  background: rgba(76, 175, 80, 1); /* slightly darker green hover */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(76, 175, 80, 0.45);
+}
+
+.vh-download-btn:active {
+  transform: translateY(0px);
+}
+
+/* Add spacing when buttons fall to next line on small screens */
+@media (max-width: 600px) {
+  .vh-report-panel {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px;
+  }
+  
+  .vh-download-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
