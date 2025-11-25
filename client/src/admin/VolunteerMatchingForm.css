@@ -225,6 +225,7 @@ select option {
 }
 #vol-select {
   appearance: none !important;
+  color: "black";
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
 }

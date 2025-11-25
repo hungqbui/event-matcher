@@ -73,7 +73,11 @@ class VolunteerService:
         """Get all volunteers"""
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT * FROM volunteers"))
+            result = conn.execute(text("""
+                SELECT v.*, u.name
+                FROM volunteers v
+                LEFT JOIN users u ON v.user_id = u.id
+            """))
             volunteers = result.mappings().all()
         return jsonify([dict(v) for v in volunteers]), 200
     
@@ -82,7 +86,12 @@ class VolunteerService:
         """Get volunteer by ID"""
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
-            result = conn.execute(text("SELECT * FROM volunteers WHERE id = :vol_id"), {"vol_id": vol_id})
+            result = conn.execute(text("""
+                SELECT v.*, u.name
+                FROM volunteers v
+                LEFT JOIN users u ON v.user_id = u.id
+                WHERE v.id = :vol_id
+            """), {"vol_id": vol_id})
             volunteer = result.mappings().first()
         if not volunteer:
             return jsonify({'message': 'Not found'}), 404

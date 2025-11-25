@@ -47,6 +47,9 @@ const Navbar = () => {
         <Link to="/events" className="nav-tab">
           Browse Events
         </Link>
+        <Link to="/leaderboard" className="nav-tab">
+          Leaderboard
+        </Link>
       </div>
 
       <div className="navbar-right">

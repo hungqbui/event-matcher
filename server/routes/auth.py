@@ -26,3 +26,20 @@ def check_email():
 @bp.route("/skills", methods=["GET"])
 def list_skills():
     return AuthService.list_skills()
+
+@bp.route("/admin/user/<int:user_id>", methods=["GET"])
+def get_admin_user_id(user_id):
+    """Get admin's user_id from admin table by looking up the user_id"""
+    from flask import current_app
+    from sqlalchemy import text
+    
+    engine = current_app.config["ENGINE"]
+    with engine.connect() as conn:
+        result = conn.execute(text("""
+            SELECT user_id FROM admins WHERE user_id = :user_id
+        """), {"user_id": user_id}).mappings().first()
+        
+        if not result:
+            return jsonify({'error': 'Admin not found', 'user_id': user_id}), 404
+        
+        return jsonify({'user_id': result['user_id']}), 200

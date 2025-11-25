@@ -55,7 +55,7 @@ export default function VolunteerHistory() {
     const table = document.querySelector(".vh-table") as HTMLElement;
     if (!table) return alert("No data to export.");
 
-    html2canvas(table).then((canvas) => {
+    html2canvas(table).then((canvas : any) => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 190;
