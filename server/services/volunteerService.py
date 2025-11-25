@@ -19,23 +19,35 @@ class VolunteerService:
 			
 			volunteer_id = volunteer_result['id']
 			
-			# Get all events the user joined from matches table
+			# Get all events from both matches and volunteer_history
+			# Use UNION to combine results from both tables
 			result = conn.execute(text("""
-				SELECT e.id, e.name as event_name, e.date, e.time_label,
-						e.location, e.description, e.urgency, e.img,
-						m.volunteer_id, e.id as event_id,
-						m.status,
+				SELECT DISTINCT
+					e.id, 
+					e.name as eventName, 
+					e.time_label as date,
+					e.location, 
+					e.description, 
+					e.urgency, 
+					e.img,
+					:volunteer_id as volunteer_id, 
+					e.id as event_id,
+					COALESCE(
 						CASE 
 							WHEN m.status = 'pending' THEN 'Registered'
-							WHEN m.status = 'confirmed' THEN 'Confirmed'
+							WHEN m.status = 'confirmed' THEN 'Attended'
 							WHEN m.status = 'cancelled' THEN 'Cancelled'
 							ELSE 'Registered'
-						END as status_display,
-						0 as score
-				FROM matches m
-				JOIN events e ON m.event_id = e.id
-				WHERE m.volunteer_id = :volunteer_id
-				ORDER BY e.date DESC
+						END,
+						'Attended'
+					) as status,
+					0 as score,
+					COALESCE(vh.created_at, m.matched_at) as created_at
+				FROM events e
+				LEFT JOIN matches m ON e.id = m.event_id AND m.volunteer_id = :volunteer_id
+				LEFT JOIN volunteer_history vh ON e.id = vh.event_id AND vh.volunteer_id = :volunteer_id
+				WHERE (m.volunteer_id = :volunteer_id OR vh.volunteer_id = :volunteer_id)
+				ORDER BY created_at DESC
 			"""), {"volunteer_id": volunteer_id}).mappings().all()
    
 		return jsonify([dict(row) for row in result])
