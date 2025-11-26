@@ -1,45 +1,33 @@
-MOCK_EVENTS = {
-    '1': {
-        'id': 1,
-        'img': '/src/assets/Volunteer_home.jpg',
-        'name': 'Community Food Drive',
-        'time': 'Sat, Oct 5 · 9:00 AM - 12:00 PM',
-        'description': 'Join us to collect and distribute food to local families in need. Volunteers will help sort donations and assemble boxes for distribution.',
-        'location': 'Houston Food Bank, 535 Portwall St, Houston, TX 77029',
-        'urgency': 'low',
-        'desiredSkills': ['organization', 'communication', 'physical stamina']
-    },
-    '2': {
-        'id': 2,
-        'img': '/src/assets/TreePlant.jpg',
-        'name': 'Neighborhood Tree Planting',
-        'time': 'Sun, Oct 13 · 10:00 AM - 2:00 PM',
-        'description': 'Help us plant trees around the park to improve air quality and provide shade. Gloves and tools will be provided.',
-        'location': 'Memorial Park, 6501 Memorial Dr, Houston, TX 77007',
-        'urgency': 'low',
-        'desiredSkills': ['physical labor', 'gardening', 'teamwork']
-    },
-    '3': {
-        'id': 3,
-        'img': '/src/assets/VCleanupHome.webp',
-        'name': 'Coastal Cleanup',
-        'time': 'Sat, Nov 2 · 8:00 AM - 11:00 AM',
-        'description': 'A morning of beach cleanup to remove litter and protect marine life. All ages welcome; bring reusable water bottle.',
-        'location': 'Galveston Beach, 2501 Seawall Blvd, Galveston, TX 77550',
-        'urgency': 'low',
-        'desiredSkills': ['environmental awareness', 'teamwork', 'physical stamina']
-    }
-}
-
-from flask import jsonify
+from sqlalchemy import text
+from flask import jsonify, current_app, request
 
 class ManagerEventService:
+    
     @staticmethod
     def fetch_events(status=None):
-        if status:
-            filtered_events = {k: v for k, v in MOCK_EVENTS.items() if v['urgency'] == status}
-            return jsonify(list(filtered_events.values()))
-        return jsonify(list(MOCK_EVENTS.values()))
+        engine = current_app.config["ENGINE"]
+        
+        body = request.get_json()
+        user_id = body.get('userId')
+
+        if not user_id:
+            return jsonify({'message': 'User is not sign in'}), 400
+
+        with engine.connect() as conn:
+            user = conn.execute(text("SELECT * FROM admins WHERE user_id = :id"), {'id': user_id}).mappings().first()
+            if not user:
+                return jsonify({'message': 'Unauthorized'}), 403
+
+            events = conn.execute(text("SELECT * FROM events WHERE ownerid = :user_id"), {'user_id': user_id}).mappings().all()
+
+            # Convert RowMapping objects to dictionaries
+            events_list = [dict(event) for event in events]
+
+            if status:
+                filtered_events = [event for event in events_list if event['urgency'] == status]
+                return jsonify(filtered_events), 200
+            
+            return jsonify(events_list), 200
 
     @staticmethod
     def create_event(data):
@@ -49,53 +37,101 @@ class ManagerEventService:
             if field not in data:
                 return jsonify({'message': f'Missing required field: {field}'}), 400
         
-        # Generate new event ID
-        event_id = max([int(k) for k in MOCK_EVENTS.keys()]) + 1 if MOCK_EVENTS else 1
+        engine = current_app.config["ENGINE"]
+        userid = data.get('userId')
         
-        # Create new event
-        new_event = {
-            'id': event_id,  # Convert first 8 chars of UUID to integer
-            'img': data.get('img', '/src/assets/Volunteer_home.jpg'),  # Default image if none provided
-            'name': data['name'],
-            'time': data['time'],
-            'description': data['description'],
-            'location': data['location'],
-            'urgency': data.get('urgency', 'low'),
-            'desiredSkills': data.get('desiredSkills', [])
-        }
-        
-        MOCK_EVENTS[str(event_id)] = new_event
+        with engine.connect() as conn:
+            user = conn.execute(text("SELECT * FROM admins WHERE user_id = :user_id"), {'user_id': userid}).mappings().first()
+            
+            if not user:
+                return jsonify({'message': 'Unauthorized'}), 403
+            
+            # Create new event
+            new_event = {
+                'ownerid': user['user_id'],
+                'img': data.get('img', '/src/assets/Volunteer_home.jpg'),  # Default image if none provided
+                'name': data['name'],
+                'time_label': data['time'],
+                'date': data.get('date', '2024-12-31'),  # Default date
+                'description': data['description'],
+                'location': data['location'],
+                'max_volunteers': data.get('max_volunteers', 10),
+                'urgency': data.get('urgency', 'low')
+            }
+            
+            try:
+                result = conn.execute(text("""
+                    INSERT INTO events (ownerid, img, name, time_label, date, description, location, max_volunteers, urgency)
+                    VALUES (:ownerid, :img, :name, :time_label, :date, :description, :location, :max_volunteers, :urgency)
+                """), new_event)
+                conn.commit()
+                new_event['id'] = result.lastrowid
+            except Exception as e:
+                return jsonify({'message': 'Error creating event', 'error': str(e)}), 500
+                
         return jsonify(new_event), 201
     
     @staticmethod
     def update_event(event_id, data):
-        if event_id not in MOCK_EVENTS:
-            return jsonify({'message': 'Event not found'}), 404
+        engine = current_app.config["ENGINE"]
         
-        event = MOCK_EVENTS[event_id]
-        
+        with engine.connect() as conn:
+            event = conn.execute(text("SELECT * FROM events WHERE id = :id"), {'id': event_id}).mappings().first()
+            if not event:
+                return jsonify({'message': 'Event not found'}), 404
 
-        # Update fields
-        field_mapping = {
-            'name': 'name',
-            'img': 'img',
-            'time': 'time',
-            'description': 'description',
-            'location': 'location',
-            'urgency': 'urgency',
-            'desiredSkills': 'desiredSkills'
-        }
-        
-        for client_field, db_field in field_mapping.items():
-            if client_field in data:
-                event[db_field] = data[client_field]
-        
-        return jsonify(event)
+            # Check if user is the event owner
+            userid = data.get('userId')
+            if str(event['ownerid']) != str(userid):
+                return jsonify({'message': 'Unauthorized'}), 403
+
+            try:
+                conn.execute(text("""
+                    UPDATE events
+                    SET img = :img,
+                        name = :name,
+                        date = :time,
+                        description = :description,
+                        location = :location,
+                        urgency = :urgency
+                    WHERE id = :id
+                """), {
+                    'id': int(event_id),
+                    'img': data.get('img', event['img']),
+                    'name': data.get('name', event['name']),
+                    'time': data.get('time', event['date']),
+                    'description': data.get('description', event['description']),
+                    'location': data.get('location', event['location']),
+                    'urgency': data.get('urgency', event['urgency']),
+                })
+                conn.commit()
+                
+                # Fetch updated event
+                updated_event = conn.execute(text("SELECT * FROM events WHERE id = :id"), {'id': event_id}).mappings().first()
+
+            except Exception as e:
+                print(e)
+                return jsonify({'message': 'Error updating event', 'error': str(e)}), 500
+
+        return jsonify(dict(updated_event)), 200
     
     @staticmethod
     def delete_event(event_id):
-        if event_id not in MOCK_EVENTS:
-            return jsonify({'message': 'Event not found'}), 404
+        engine = current_app.config["ENGINE"]
         
-        del MOCK_EVENTS[event_id]
-        return jsonify({'message': 'Event deleted successfully'})
+        with engine.connect() as conn:
+            event = conn.execute(text("SELECT * FROM events WHERE id = :id"), {'id': event_id}).mappings().first()
+            if not event:
+                return jsonify({'message': 'Event not found'}), 404
+            
+            body = request.get_json()
+            userid = body.get('userId')
+
+            # Check if user is the event owner
+            if str(event['ownerid']) != str(userid):
+                return jsonify({'message': 'Unauthorized'}), 403
+            
+            conn.execute(text("DELETE FROM events WHERE id = :id"), {'id': event_id})
+            conn.commit()
+        
+        return jsonify({'message': 'Event deleted successfully'}), 200

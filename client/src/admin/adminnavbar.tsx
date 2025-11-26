@@ -1,11 +1,15 @@
 import { Link } from "react-router-dom";
 import "./AdminNavbar.css";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function AdminNavbar() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   return (
     <nav className="admin-navbar">
       <div className="admin-logo-container">
-        <h1 className="admin-logo-text">Admin Panel</h1>
+        <h1 className="admin-logo-text" onClick={() => navigate("/")}>Admin Panel</h1>
       </div>
 
       <div className="admin-nav-tabs">
@@ -18,12 +22,14 @@ export default function AdminNavbar() {
         <Link to="/admin/volunteers" className="admin-nav-tab">
           Volunteers
         </Link>
+        <Link to="/admin/profiles" className="admin-nav-tab">
+          Profile
+        </Link>
+
       </div>
 
-      <div className="admin-auth-buttons">
-        <Link to="/logout" className="admin-nav-btn">
-          Logout
-        </Link>
+      <div className="admin-auth-buttons" onClick={logout}>
+        Logout
       </div>
     </nav>
   );

@@ -1,21 +1,18 @@
 import type { EventData } from "../components/EventManagementPopup";
 import type { VolunteerHistoryEventData } from "../components/VolunteerHistoryEvent";
 
-const API_BASE_URL = 'http://localhost:5000/api';
 
-// Get token from localStorage
-const getAuthToken = (): string | null => {
+// Get user ID from localStorage
+const getUserId = (): string | null => {
 
-    // TODO: Use once done with auth 
-    return "some_token"
+    return localStorage.getItem("pp_user_id");
 
-    // return localStorage.getItem('authToken');
 };
 
 // Regular user fetch - no auth required
 export const fetchAllEvents = async (): Promise<EventData[]> => {
     try {
-        const response = await fetch(`${API_BASE_URL}/events`);
+        const response = await fetch(`/api/events`);
         if (!response.ok) {
             throw new Error('Failed to fetch events');
         }
@@ -28,16 +25,18 @@ export const fetchAllEvents = async (): Promise<EventData[]> => {
 
 // Admin fetch with auth
 export const fetchAllEventsAdmin = async (): Promise<EventData[]> => {
-    const token = getAuthToken();
-    if (!token) {
-        throw new Error('No authentication token found');
+    const userId = getUserId();
+    if (!userId) {
+        throw new Error('No user ID found');
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/manager/events`, {
+        const response = await fetch(`/api/manager/listevents`, {
+            method: 'POST',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId })
         });
 
         if (response.status === 401) {
@@ -60,20 +59,19 @@ export const fetchAllEventsAdmin = async (): Promise<EventData[]> => {
 };
 
 // Create new event (Admin only)
-export const createEvent = async (eventData: Omit<EventData, 'id'>): Promise<EventData> => {
-    const token = getAuthToken();
-    if (!token) {
-        throw new Error('No authentication token found');
+export const createEvent = async (eventData: EventData): Promise<EventData> => {
+    const userId = getUserId();
+    if (!userId) {
+        throw new Error('No user ID found');
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/manager/events`, {
+        const response = await fetch(`/api/manager/events`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(eventData)
+            body: JSON.stringify({ ...eventData, userId })
         });
 
         if (response.status === 401) {
@@ -98,19 +96,18 @@ export const createEvent = async (eventData: Omit<EventData, 'id'>): Promise<Eve
 
 // Update event (Admin only)
 export const updateEvent = async (id: number, eventData: Partial<EventData>): Promise<EventData> => {
-    const token = getAuthToken();
-    if (!token) {
-        throw new Error('No authentication token found');
+    const userId = getUserId();
+    if (!userId) {
+        throw new Error('No user ID found');
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/manager/events/${id}`, {
-            method: 'PUT',
+        const response = await fetch(`/api/manager/events/${id}`, {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(eventData)
+            body: JSON.stringify({ ...eventData, userId })
         });
 
         if (response.status === 401) {
@@ -135,17 +132,18 @@ export const updateEvent = async (id: number, eventData: Partial<EventData>): Pr
 
 // Delete event (Admin only)
 export const deleteEvent = async (id: number): Promise<void> => {
-    const token = getAuthToken();
-    if (!token) {
-        throw new Error('No authentication token found');
+    const userId = getUserId();
+    if (!userId) {
+        throw new Error('No user ID found');
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/manager/events/${id}`, {
+        const response = await fetch(`/api/manager/events/${id}`, {
             method: 'DELETE',
             headers: {
-                'Authorization': `Bearer ${token}`
-            }
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId })
         });
 
         if (response.status === 401) {
@@ -167,8 +165,19 @@ export const deleteEvent = async (id: number): Promise<void> => {
 };
 
 export const fetchHistoryEvents = async (): Promise<VolunteerHistoryEventData[]> => {
+    const userId = getUserId();
+    if (!userId) {
+        throw new Error('No user ID found');
+    }
+
     try {
-        const response = await fetch(`${API_BASE_URL}/volunteer_user/history`);
+        const response = await fetch(`/api/volunteer_user/history`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userId })
+        });
         if (!response.ok) {
             throw new Error('Failed to fetch history events');
         }
@@ -178,3 +187,16 @@ export const fetchHistoryEvents = async (): Promise<VolunteerHistoryEventData[]>
         throw error;
     }
 };
+
+export const fetchSkills = async (): Promise<string[]> => {
+    try {
+        const response = await fetch(`/api/skills`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch skills');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching skills:', error);
+        throw error;
+    }
+}

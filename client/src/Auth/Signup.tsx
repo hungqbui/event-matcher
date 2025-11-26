@@ -1,22 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import "./Signup.css";
 import PinePalLogo from "../assets/pineLogo.webp";
 import Home from "../assets/Volunteer_home.jpg";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 
-const API = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000/api";
 
 const STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA",
   "ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR",
   "PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"
-];
-
-const SKILLS = [
-  "Tree Planting","Disaster Relief","Youth Mentorship","Food Drives","Blood Drives",
-  "Gardening","Organizing","First Aid","Teaching","Teamwork","Environmental Awareness"
 ];
 
 type FormState = {
@@ -29,6 +24,8 @@ type FormState = {
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
+  const { signup } = useAuth();
+  const [isAdminSignup, setIsAdminSignup] = useState(false);
   const [form, setForm] = useState<FormState>({
     name: "",
     email: "",
@@ -38,6 +35,29 @@ const Signup: React.FC = () => {
   });
   const [msg, setMsg] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [availableSkills, setAvailableSkills] = useState<string[]>([]);
+  const [loadingSkills, setLoadingSkills] = useState(true);
+
+  useEffect(() => {
+    // Fetch skills from the database
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch("/api/skills");
+        if (response.ok) {
+          const skills = await response.json();
+          setAvailableSkills(skills);
+        } else {
+          setMsg("Failed to load skills. Please refresh the page.");
+        }
+      } catch (err) {
+        setMsg("Error loading skills. Please check your connection.");
+      } finally {
+        setLoadingSkills(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -58,12 +78,20 @@ const Signup: React.FC = () => {
     setMsg("");
 
     // match backend validations
-    if (!form.name || !form.email || !form.password || !form.state || form.skills.length === 0) {
-      setMsg("All fields are required (including at least one skill).");
+    if (!form.name || !form.email || !form.password || !form.state) {
+      setMsg("All fields are required.");
+      return;
+    }
+    if (!isAdminSignup && form.skills.length === 0) {
+      setMsg("Please select at least one skill.");
       return;
     }
     if (!isValidEmail(form.email)) {
       setMsg("Please enter a valid email.");
+      return;
+    }
+    if (isAdminSignup && !form.email.endsWith("@pine.edu")) {
+      setMsg("Admin registration requires a @pine.edu email address.");
       return;
     }
     if (form.password.length < 6) {
@@ -73,24 +101,17 @@ const Signup: React.FC = () => {
 
     try {
       setSubmitting(true);
-      const res = await fetch(`${API}/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json().catch(() => ({}));
-
-      if (res.ok) {
-        // Optionally stash a name for a welcome toast on the homepage
-        localStorage.setItem("pp_user_name", data?.user?.name ?? form.name);
-        // Redirect to homepage
-        navigate("/");
-        return;
-      }
-
-      setMsg(data?.message || "Signup failed.");
-    } catch {
-      setMsg("Server error. Check that the backend is running and CORS is enabled.");
+      await signup(form);
+      
+      // Store legacy fields for backward compatibility
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem("pp_user_name", userData.name || form.name);
+      localStorage.setItem("pp_user_id", userData.id || "");
+      
+      // Redirect to homepage
+      navigate("/");
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : "Signup failed.");
     } finally {
       setSubmitting(false);
     }
@@ -103,7 +124,33 @@ const Signup: React.FC = () => {
         <div className="signup-overlay">
           <div className="signup-card">
             <img src={PinePalLogo} alt="Pine Pals Logo" className="signup-logo" />
-            <h2 className="signup-title">Volunteer Sign Up</h2>
+            
+            <div className="signup-type-toggle">
+              <button
+                type="button"
+                className={`toggle-btn ${!isAdminSignup ? "active" : ""}`}
+                onClick={() => setIsAdminSignup(false)}
+              >
+                Volunteer
+              </button>
+              <button
+                type="button"
+                className={`toggle-btn ${isAdminSignup ? "active" : ""}`}
+                onClick={() => setIsAdminSignup(true)}
+              >
+                Admin
+              </button>
+            </div>
+
+            <h2 className="signup-title">
+              {isAdminSignup ? "Admin Registration" : "Volunteer Sign Up"}
+            </h2>
+
+            {isAdminSignup && (
+              <p className="admin-note">
+                ℹ️ Admin accounts require a @pine.edu email address
+              </p>
+            )}
 
             <form className="signup-form" onSubmit={handleSubmit} noValidate>
               <label htmlFor="name">Full Name *</label>
@@ -131,19 +178,27 @@ const Signup: React.FC = () => {
                 ))}
               </select>
 
-              <label htmlFor="skills">Skills * (hold Ctrl/Cmd to select multiple)</label>
-              <select
-                id="skills"
-                name="skills"
-                multiple
-                value={form.skills}
-                onChange={handleSkillsChange}
-                disabled={submitting}
-              >
-                {SKILLS.map((skill) => (
-                  <option key={skill} value={skill}>{skill}</option>
-                ))}
-              </select>
+              {!isAdminSignup && (
+                <>
+                  <label htmlFor="skills">Skills * (hold Ctrl/Cmd to select multiple)</label>
+                  <select
+                    id="skills"
+                    name="skills"
+                    multiple
+                    value={form.skills}
+                    onChange={handleSkillsChange}
+                    disabled={submitting || loadingSkills}
+                  >
+                    {loadingSkills ? (
+                      <option disabled>Loading skills...</option>
+                    ) : (
+                      availableSkills.map((skill) => (
+                        <option key={skill} value={skill}>{skill}</option>
+                      ))
+                    )}
+                  </select>
+                </>
+              )}
 
               <label htmlFor="email">Email *</label>
               <input
@@ -155,7 +210,11 @@ const Signup: React.FC = () => {
                 required
                 autoComplete="email"
                 disabled={submitting}
+                placeholder={isAdminSignup ? "your.name@pine.edu" : ""}
               />
+              {isAdminSignup && !form.email.endsWith("@pine.edu") && form.email.length > 0 && (
+                <p className="email-warning">⚠️ Admin email must end with @pine.edu</p>
+              )}
 
               <label htmlFor="password">Password *</label>
               <input

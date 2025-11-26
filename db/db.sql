@@ -1,4 +1,7 @@
+DROP DATABASE eventmatcher;
 CREATE DATABASE IF NOT EXISTS eventmatcher;
+
+USE eventmatcher;
 
 CREATE TABLE IF NOT EXISTS users (
   id              BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -15,7 +18,7 @@ CREATE TABLE IF NOT EXISTS skills (
   id    BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   name  VARCHAR(100)    NOT NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_skills_name (name)
+  UNIQUE KEY (name)
 );
 
 CREATE TABLE IF NOT EXISTS user_skills (
@@ -35,7 +38,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   state        CHAR(2)         NOT NULL,
   zip          VARCHAR(20)     NOT NULL,
   preferences  TEXT            NULL,                      -- "Prefer outdoor activities"
-  availability JSON            NULL,                      -- e.g., ["2025-10-01","2025-10-15"]
+  availability JSON            NULL,                      -- e.g., ["Monday","Wednesday","Friday"]
   updated_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (user_id),
   CONSTRAINT fk_profiles_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -57,15 +60,22 @@ CREATE TABLE IF NOT EXISTS notifications (
 CREATE TABLE IF NOT EXISTS volunteers (
   id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id      BIGINT UNSIGNED NULL,             -- link to users if applicable
-  name         VARCHAR(120)    NOT NULL,
-  email        VARCHAR(255)    NOT NULL,
   phone        VARCHAR(40)     NULL,
   availability VARCHAR(100)    NOT NULL,         -- e.g., "weekends","weekdays","evenings","flexible"
   created_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  UNIQUE KEY uq_volunteers_email (email),
   KEY idx_volunteers_user (user_id),
   CONSTRAINT fk_volunteers_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS admins (
+  id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id      BIGINT UNSIGNED NULL,             -- link to users if applicable
+  phone        VARCHAR(40)     NULL,
+  created_at   TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY (user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS volunteer_skills (
@@ -78,6 +88,7 @@ CREATE TABLE IF NOT EXISTS volunteer_skills (
 
 CREATE TABLE IF NOT EXISTS events (
   id               BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  ownerid       BIGINT UNSIGNED NOT NULL,        -- admin user who created
   name             VARCHAR(160)    NOT NULL,
   description      TEXT            NULL,
   date             DATE            NOT NULL,
@@ -115,26 +126,24 @@ CREATE TABLE IF NOT EXISTS matches (
 CREATE TABLE IF NOT EXISTS volunteer_history (
   id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   volunteer_id BIGINT UNSIGNED NOT NULL,        -- or user_id if you prefer; here we tie to volunteers
-  name        VARCHAR(160)    NOT NULL,         -- denormalized display name at the time
-  event_name  VARCHAR(160)    NOT NULL,
-  time_label  VARCHAR(160)    NOT NULL,         -- e.g., "Sat, Sep 10, 2023 · 9:00 AM - 3:00 PM"
-  description TEXT            NULL,
-  location    VARCHAR(255)    NULL,
-  urgency     ENUM('low','medium','high') NULL,
-  score       INT             NULL,
+  event_id    BIGINT UNSIGNED NOT NULL,
   created_at  TIMESTAMP       NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
-  KEY idx_vol_history_volunteer (volunteer_id, created_at),
-  CONSTRAINT fk_vol_history_vol FOREIGN KEY (volunteer_id) REFERENCES volunteers(id) ON DELETE CASCADE
+  KEY (volunteer_id, created_at),
+  FOREIGN KEY (volunteer_id) REFERENCES volunteers(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS history_tasks (
   id           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  history_id   BIGINT UNSIGNED NOT NULL,
+  history_id   BIGINT UNSIGNED DEFAULT NULL,
   name         VARCHAR(160)    NOT NULL,
   completed    BOOLEAN         NOT NULL DEFAULT FALSE,
+  volunteer_id BIGINT UNSIGNED DEFAULT NULL,
+  event_id   BIGINT UNSIGNED DEFAULT NULL,
   score        INT             NULL,
   PRIMARY KEY (id),
-  KEY idx_history_tasks_hist (history_id),
-  CONSTRAINT fk_history_tasks_hist FOREIGN KEY (history_id) REFERENCES volunteer_history(id) ON DELETE CASCADE
+  KEY (history_id),
+  FOREIGN KEY (history_id) REFERENCES volunteer_history(id) ON DELETE CASCADE,
+  FOREIGN KEY (volunteer_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
 );

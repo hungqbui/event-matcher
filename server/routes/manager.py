@@ -1,31 +1,20 @@
 from flask import Blueprint, request, jsonify
-from functools import wraps
-from ..services.managerService import ManagerEventService, MOCK_EVENTS
+from ..services.managerService import ManagerEventService
 
 
 bp = Blueprint('manager', __name__)
 
-def admin_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        return f(*args, **kwargs)
-            
-    return decorated
-
-@bp.route('/events', methods=['GET'])
-@admin_required
+@bp.route('/listevents', methods=['POST'])
 def fetch_events():
     return ManagerEventService.fetch_events()
 
 @bp.route('/events', methods=['POST'])
-@admin_required
 def create_event():
     """Create a new event"""
     data = request.get_json()
     return ManagerEventService.create_event(data)
 
-@bp.route('/events/<event_id>', methods=['PUT'])
-@admin_required
+@bp.route('/events/<event_id>', methods=['POST'])
 def update_event(event_id):
     """Update an existing event"""
    
@@ -35,10 +24,6 @@ def update_event(event_id):
 
 
 @bp.route('/events/<event_id>', methods=['DELETE'])
-@admin_required
 def delete_event(event_id):
-    """Delete an event"""
-    if event_id not in MOCK_EVENTS:
-        return jsonify({'message': 'Event not found'}), 404
 
     return ManagerEventService.delete_event(event_id)

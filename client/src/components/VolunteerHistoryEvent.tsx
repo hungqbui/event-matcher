@@ -1,5 +1,4 @@
 import React from "react";
-import type { EventData } from "./EventManagementPopup";
 import "./VolunteerHistoryEvent.css";
 
 export type Task = {
@@ -7,12 +6,25 @@ export type Task = {
 	name: string;
 	completed: boolean;
 	score: number;
+	volunteer_id?: number;
+	event_id?: number;
 };
 
-export type VolunteerHistoryEventData = Omit<EventData, 'time'> & {
+export type VolunteerHistoryEventData = {
+	id: number;
+	volunteer_id: number;
+	name: string;
+	event_name: string;
+	event_id?: number;
+	time_label: string;
+	description: string;
+	location: string;
+	urgency: "low" | "medium" | "high";
 	score: number;
-	tasks: Task[];
-	time: string; // Keep the old time field for backward compatibility
+	created_at: string;
+	img?: string;
+	tasks?: Task[];
+	date?: string;
 };
 
 type Props = {
@@ -26,21 +38,21 @@ const truncate = (s?: string, n = 100) => {
 };
 
 const VolunteerHistoryEvent: React.FC<Props> = ({ event, onClick }) => {
-	const totalPossibleScore = event.tasks.reduce((sum, task) => sum + task.score, 0);
+	const totalPossibleScore = event.tasks?.reduce((sum, task) => sum + task.score, 0) || 0;
 	const progress = totalPossibleScore > 0 ? (event.score / totalPossibleScore) * 100 : 0;
 
 	return (
 		<div className="vhe-card" onClick={() => onClick && onClick(event)} role="button" tabIndex={0}>
 			{event.img ? (
 				// eslint-disable-next-line @next/next/no-img-element
-				<img src={event.img} alt={event.name} className="vhe-image" />
+				<img src={event.img} alt={event.event_name} className="vhe-image" />
 			) : (
 				<div className="vhe-image vhe-image--placeholder">No Image</div>
 			)}
 
 			<div className="vhe-body">
-				<h4 className="vhe-title">{event.name}</h4>
-				<div className="vhe-time">{event.time}</div>
+				<h4 className="vhe-title">{event.event_name}</h4>
+				<div className="vhe-time">{event.time_label}</div>
 				<p className="vhe-desc">{truncate(event.description, 120)}</p>
 				<div className="vhe-score-bar">
 					<div className="vhe-score-progress" style={{ width: `${progress}%` }}></div>

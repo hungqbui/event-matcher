@@ -1,9 +1,11 @@
 import "./profile.css";
 import { useState, useEffect } from "react";
+import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
 export default function ProfilePage() {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     fullName: "",
     address1: "",
@@ -13,17 +15,59 @@ export default function ProfilePage() {
     zip: "",
     skills: [] as string[],
     preferences: "",
-    availability: [] as string[], // store ISO dates
+    availability: [] as string[], // days of the week
   });
 
-  const [newDate, setNewDate] = useState("");
+  const [availableSkills, setAvailableSkills] = useState<string[]>([]);
+  const [loadingSkills, setLoadingSkills] = useState(true);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  const daysOfWeek = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday"
+  ];
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/profile')
-      .then(res => res.json())
-      .then(data => setFormData(data))
-      .catch(err => console.error("Error:", err));
-    }, []);
+    // Fetch available skills from database
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch("/api/skills");
+        if (response.ok) {
+          const skills = await response.json();
+          setAvailableSkills(skills);
+        }
+      } catch (err) {
+        console.error("Error fetching skills:", err);
+      } finally {
+        setLoadingSkills(false);
+      }
+    };
+
+    // Fetch user profile data
+    const fetchProfile = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const response = await fetch(`/api/profile?user_id=${user.id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setFormData(data);
+        }
+      } catch (err) {
+        console.error("Error fetching profile:", err);
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    fetchSkills();
+    fetchProfile();
+  }, [user?.id]);
 
   const states = [
     { code: "AL", name: "Alabama" },
@@ -78,8 +122,6 @@ export default function ProfilePage() {
     { code: "WY", name: "Wyoming" },
   ];
 
-  const skillsOptions = ["Tree Planting", "Disaster Relief", "Youth Mentorship", "Food Drives", "Blood Drives"];
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -90,149 +132,208 @@ export default function ProfilePage() {
     setFormData(prev => ({ ...prev, skills: selected }));
   };
 
-  const handleAddDate = () => {
-    if (newDate && !formData.availability.includes(newDate)) {
-      setFormData(prev => ({ ...prev, availability: [...prev.availability, newDate] }));
-      setNewDate("");
-    }
+  const handleAvailabilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+    setFormData(prev => ({ ...prev, availability: selected }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    const res = await fetch('http://localhost:5000/api/profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
-    });
-    const data = await res.json();
+    e.preventDefault();
     
-    if (!res.ok) throw data;
-    alert("Profile saved successfully!");
-  } catch (err: any) {
-    alert(`Error: ${err.errors?.join(', ') || 'Unknown error'}`);
-  }
-};
+    if (!user?.id) {
+      alert("User not authenticated");
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...formData, userId: user.id })
+      });
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || data.message || 'Failed to save profile');
+      }
+      alert("Profile saved successfully!");
+    } catch (err: any) {
+      alert(`Error: ${err.message || 'Unknown error'}`);
+    }
+  };
 
   return (
     <>
     <Navbar />
     <div className="profile-page">
-  <h1 className="profile-welcome">Welcome, {formData.fullName || "User"}!</h1>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem", maxWidth: "500px" }}>
+      {loadingProfile ? (
+        <div className="profile-card">
+          <div className="profile-loading">Loading profile...</div>
+        </div>
+      ) : (
+        <div className="profile-card">
+          <h1 className="profile-title">Profile Management</h1>
+          <p className="profile-subtitle">Welcome, {formData.fullName || user?.name || "User"}!</p>
+          <form onSubmit={handleSubmit} className="profile-form">
         
-        <label>
-          Full Name (required):
+        <div className="form-group">
+          <label htmlFor="fullName">
+            Full Name <span className="required">*</span>
+          </label>
           <input
+            id="fullName"
             type="text"
             name="fullName"
             maxLength={50}
             required
             value={formData.fullName}
             onChange={handleChange}
+            placeholder="Enter your full name"
           />
-        </label>
+        </div>
 
-        <label>
-          Address 1 (required):
+        <div className="form-group">
+          <label htmlFor="address1">
+            Address Line 1 <span className="required">*</span>
+          </label>
           <input
+            id="address1"
             type="text"
             name="address1"
             maxLength={100}
             required
             value={formData.address1}
             onChange={handleChange}
+            placeholder="Street address"
           />
-        </label>
+        </div>
 
-        <label>
-          Address 2 (optional):
+        <div className="form-group">
+          <label htmlFor="address2">
+            Address Line 2 <span className="optional">(optional)</span>
+          </label>
           <input
+            id="address2"
             type="text"
             name="address2"
             maxLength={100}
             value={formData.address2}
             onChange={handleChange}
+            placeholder="Apt, suite, etc."
           />
-        </label>
+        </div>
 
-        <label>
-          City (required):
-          <input
-            type="text"
-            name="city"
-            maxLength={100}
-            required
-            value={formData.city}
-            onChange={handleChange}
-          />
-        </label>
+        <div className="form-row">
+          <div className="form-group">
+            <label htmlFor="city">
+              City <span className="required">*</span>
+            </label>
+            <input
+              id="city"
+              type="text"
+              name="city"
+              maxLength={100}
+              required
+              value={formData.city}
+              onChange={handleChange}
+              placeholder="City"
+            />
+          </div>
 
-        <label>
-          State (required):
-          <select name="state" required value={formData.state} onChange={handleChange}>
-            <option value="">--Select State--</option>
-            {states.map(s => (
-              <option key={s.code} value={s.code}>{s.name}</option>
-            ))}
-          </select>
-        </label>
+          <div className="form-group form-group-small">
+            <label htmlFor="state">
+              State <span className="required">*</span>
+            </label>
+            <select id="state" name="state" required value={formData.state} onChange={handleChange}>
+              <option value="">--Select--</option>
+              {states.map(s => (
+                <option key={s.code} value={s.code}>{s.code}</option>
+              ))}
+            </select>
+          </div>
 
-        <label>
-          Zip Code (min 5, max 9 chars, required):
-          <input
-            type="text"
-            name="zip"
-            pattern="^\d{5,9}$"
-            required
-            value={formData.zip}
-            onChange={handleChange}
-          />
-        </label>
+          <div className="form-group form-group-small">
+            <label htmlFor="zip">
+              Zip Code <span className="required">*</span>
+            </label>
+            <input
+              id="zip"
+              type="text"
+              name="zip"
+              pattern="^\d{5,9}$"
+              required
+              value={formData.zip}
+              onChange={handleChange}
+              placeholder="12345"
+            />
+          </div>
+        </div>
 
-        <label>
-          Skills (multi-select, required):
+        <div className="form-group">
+          <label htmlFor="skills">
+            Skills <span className="required">*</span>
+          </label>
           <select
+            id="skills"
             name="skills"
             multiple
             required
             value={formData.skills}
             onChange={handleSkillsChange}
+            disabled={loadingSkills}
+            className="multi-select"
           >
-            {skillsOptions.map(skill => (
-              <option key={skill} value={skill}>{skill}</option>
-            ))}
+            {loadingSkills ? (
+              <option disabled>Loading skills...</option>
+            ) : (
+              availableSkills.map(skill => (
+                <option key={skill} value={skill}>{skill}</option>
+              ))
+            )}
           </select>
-        </label>
+          <small className="form-hint">Hold Ctrl (Cmd on Mac) to select multiple</small>
+        </div>
 
-        <label>
-          Preferences (optional):
+        <div className="form-group">
+          <label htmlFor="preferences">
+            Preferences <span className="optional">(optional)</span>
+          </label>
           <textarea
+            id="preferences"
             name="preferences"
             value={formData.preferences}
             onChange={handleChange}
+            placeholder="Tell us about your volunteer preferences..."
+            rows={4}
           />
-        </label>
+        </div>
 
-        <label>
-          Availability (pick multiple dates, required):
-          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <input
-              type="date"
-              value={newDate}
-              onChange={(e) => setNewDate(e.target.value)}
-            />
-            <button type="button" className="profile-add-btn" onClick={handleAddDate}>Add</button>
-          </div>
-          <ul>
-            {formData.availability.map(date => (
-              <li key={date}>{date}</li>
+        <div className="form-group">
+          <label htmlFor="availability">
+            Availability <span className="required">*</span>
+          </label>
+          <select
+            id="availability"
+            name="availability"
+            multiple
+            required
+            value={formData.availability}
+            onChange={handleAvailabilityChange}
+            className="multi-select availability-select"
+          >
+            {daysOfWeek.map(day => (
+              <option key={day} value={day}>{day}</option>
             ))}
-          </ul>
-        </label>
+          </select>
+          <small className="form-hint">
+            Select the days you're generally available to volunteer
+          </small>
+        </div>
 
-        <button type="submit" className="profile-save-btn">Save Profile</button>
+        <button type="submit" className="profile-save-btn">💾 Save Profile</button>
       </form>
+        </div>
+      )}
     </div>
     <Footer />
     </>

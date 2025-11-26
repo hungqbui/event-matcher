@@ -167,3 +167,130 @@
     background: #93ff96;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+.emp-tasks-section {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.emp-tasks-section h4 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.emp-tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.emp-task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.emp-task-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.emp-task-score-badge {
+    background: var(--green2);
+    color: #333;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.emp-task-input {
+    flex: 1;
+    padding: 6px 10px !important;
+    margin: 0 !important;
+    font-size: 0.9rem;
+}
+
+.emp-task-score {
+    width: 80px !important;
+    padding: 6px 10px !important;
+    margin: 0 !important;
+    font-size: 0.9rem;
+}
+
+.emp-task-btn {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.emp-task-edit {
+    background: #86e7b8;
+    color: #333;
+}
+
+.emp-task-edit:hover {
+    background: #93ff96;
+}
+
+.emp-task-delete {
+    background: rgba(255, 100, 100, 0.8);
+    color: white;
+}
+
+.emp-task-delete:hover {
+    background: rgba(255, 50, 50, 0.9);
+}
+
+.emp-task-save {
+    background: #86e7b8;
+    color: #333;
+}
+
+.emp-task-save:hover {
+    background: #93ff96;
+}
+
+.emp-task-cancel-edit {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.emp-task-cancel-edit:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.emp-new-task {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    border: 1px dashed rgba(0, 0, 0, 0.2);
+}
+
+.emp-task-add {
+    background: #86e7b8;
+    color: #333;
+    white-space: nowrap;
+}
+
+.emp-task-add:hover {
+    background: #93ff96;
+}

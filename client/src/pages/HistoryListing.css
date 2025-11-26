@@ -12,9 +12,77 @@
     text-align: center;
 }
 
+.hl-points-banner {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 20px;
+    background: linear-gradient(135deg, var(--green1) 0%, var(--green2) 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.hl-points-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hl-points-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--black);
+}
+
+.hl-points-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--black);
+}
+
+.hl-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin: 20px auto;
+    max-width: 500px;
+}
+
+.hl-tab {
+    flex: 1;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #555;
+}
+
+.hl-tab:hover {
+    background: rgba(255, 255, 255, 0.9);
+    border-color: var(--green2);
+}
+
+.hl-tab--active {
+    background: var(--green1);
+    border-color: var(--green2);
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .hl-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+}
+
+.hl-empty-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #666;
+    margin: 40px auto;
+    padding: 20px;
 }

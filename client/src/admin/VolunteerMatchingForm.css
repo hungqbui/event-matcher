@@ -17,12 +17,18 @@
   font-size: 28px;
   font-weight: 700;
 }
+.form-select,
+.form-select option {
+  color: black !important;
+  background-color: white;
+}
 
 .matching-form {
   background: transparent;
   padding: 0;
   border-radius: 0;
   border: none;
+  color:#000;
 }
 
 .form-group {
@@ -184,3 +190,43 @@ select.form-select option {
   border-radius: 8px;
   margin: 20px 0;
 }
+/* Fix text color ONLY for matching page */
+.matching-page, 
+.matching-page select, 
+.matching-page option,
+.matching-page label,
+.matching-page p,
+.matching-page h2,
+.matching-page h3 {
+  color: black !important;
+}
+
+/* Fix dropdown background */
+.matching-page select,
+.matching-page option {
+  background-color: white !important;
+}
+
+/* Force readable text in select dropdowns */
+.form-select,
+.form-select option {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+select,
+select option {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+#vol-select option {
+  color: #000 !important;
+  background-color: #fff !important;
+}
+#vol-select {
+  appearance: none !important;
+  color: "black";
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+

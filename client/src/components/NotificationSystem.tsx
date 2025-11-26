@@ -12,12 +12,14 @@ const NotificationSystem: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
   useEffect(() => {
-    fetchNotifications();
+    const intId = setInterval(() => { fetchNotifications() }, 5000); // Refresh every 5 seconds
+    fetchNotifications()
+    return () => { clearInterval(intId); }
   }, []);
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/notifications");
+      const response = await fetch("http://localhost:5000/api/notifications?user_id=" + localStorage.getItem("pp_user_id"));
       const data = await response.json();
       setNotifications(data);
     } catch (error) {
