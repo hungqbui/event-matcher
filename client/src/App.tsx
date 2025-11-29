@@ -11,6 +11,7 @@ import VolunteerHistory from "./admin/volunteerhistory";
 import VolunteerMatchingForm from "./admin/VolunteerMatchingForm";
 import HistoryListing from './pages/HistoryListing.tsx';
 import Leaderboard from './pages/Leaderboard.tsx';
+import AdminProfilePage from "./admin/adminprofiles.tsx";
 
 function App() {
   return (
@@ -54,6 +55,14 @@ function App() {
           element={
             <ProtectedRoute requireAdmin>
               <VolunteerMatchingForm />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/profiles" 
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminProfilePage />
             </ProtectedRoute>
           } 
         />

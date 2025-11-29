@@ -22,6 +22,9 @@ export default function AdminNavbar() {
         <Link to="/admin/volunteers" className="admin-nav-tab">
           Volunteers
         </Link>
+        <Link to="/admin/profiles" className="admin-nav-tab">
+          Profile
+        </Link>
 
       </div>
 
