@@ -91,10 +91,11 @@ def find_match():
         return jsonify({'error': 'Invalid or missing JSON body'}), 400
 
     vol_id = data.get('volunteer_id')
+    admin_id = data.get('admin_id')
     if not vol_id:
         return jsonify({'error': 'Volunteer ID required'}), 400
 
-    return MatchService.find_best_match(vol_id)
+    return MatchService.find_best_match(vol_id, admin_id)
 
 
 @bp.route('/match', methods=['POST'])

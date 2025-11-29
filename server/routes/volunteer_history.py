@@ -44,7 +44,6 @@ def get_admin_volunteer_attendance():
             JOIN volunteers v ON m.volunteer_id = v.id
             JOIN users u ON v.user_id = u.id
             WHERE e.ownerid = :admin_user_id
-                AND m.status = 'confirmed'
             ORDER BY e.date DESC, u.name ASC
         """), {"admin_user_id": admin_user_id}).mappings().all()
         

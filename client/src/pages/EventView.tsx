@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { formatTimeLabel } from "../utils/dateFormatters";
 import "./EventView.css";
 
 interface Event {
@@ -249,7 +250,7 @@ export default function EventView() {
                   <div className="event-meta">
                     <div className="meta-item">
                       <span className="meta-icon">📅</span>
-                      <span>{new Date(event.time_label).toLocaleDateString()}</span>
+                      <span>{formatTimeLabel(event.time_label)}</span>
                     </div>
                     <div className="meta-item">
                       <span className="meta-icon">📍</span>

@@ -24,6 +24,7 @@ interface Event {
   time_label?: string;
   current_volunteers?: number;
   ownerid?: number;
+  skills: string | string[];
 }
 
 const API = "/api";
@@ -77,9 +78,6 @@ const VolunteerMatchingForm: React.FC = () => {
         adminUserId = adminData.user_id || user.id;
       }
 
-      console.log("Admin user ID:", adminUserId);
-      console.log(user);
-      console.log(evts);
 
       const filteredEvents = evts.filter((evt: Event) => {
         const eventDate = new Date(evt.time_label || evt.date);
@@ -88,7 +86,6 @@ const VolunteerMatchingForm: React.FC = () => {
         return isUpcoming && isOwnedByAdmin;
       });
 
-      console.log(evts)
 
       setVolunteers(vols);
       setEvents(filteredEvents);
@@ -110,10 +107,22 @@ const VolunteerMatchingForm: React.FC = () => {
     if (!id) return;
 
     try {
+      // Fetch volunteer details with skills
+      const volRes = await fetch(`${API}/volunteers/${id}`);
+      if (volRes.ok) {
+        const volunteerData = await volRes.json();
+        // Update the volunteer in the state with the full details including skills
+        console.log(volunteerData)
+
+        setVolunteers(prevVols => 
+          prevVols.map(v => v.id === parseInt(id) ? { ...v, ...volunteerData } : v)
+        );
+      }
+
       const res = await fetch(`${API}/match/find`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ volunteer_id: parseInt(id) }),
+        body: JSON.stringify({ volunteer_id: parseInt(id), admin_id: user?.id }),
       });
 
       if (res.ok) {
@@ -189,9 +198,15 @@ const VolunteerMatchingForm: React.FC = () => {
   const vol = volunteers.find((v) => v.id === parseInt(selectedVol));
   const evt = events.find((e) => e.id === parseInt(selectedEvt));
 
+  console.log(evt)
+
   const formatList = (value: string | string[]) => {
     if (Array.isArray(value)) return value.join(", ");
-    return value;
+    else if (typeof value === "string") {
+      return value.split(",").map((s) => s.trim()).join(", ");
+    } else {
+      return value;
+    }
   };
 
   if (loading && volunteers.length === 0) {
@@ -321,9 +336,7 @@ const VolunteerMatchingForm: React.FC = () => {
                   <strong>Location:</strong> {evt.location}
                 </p>
               )}
-              <p>
-                <strong>Requirements:</strong> {formatList(evt.requirements)}
-              </p>
+ 
               {evt.max_volunteers && (
                 <p>
                   <strong>Volunteers:</strong> {evt.current_volunteers ?? 0}/

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { VolunteerHistoryEventData, Task } from "./VolunteerHistoryEvent";
+import { formatTimeLabel } from "../utils/dateFormatters";
 import "./VolunteerHistoryPopup.css";
 
 type Props = {
@@ -112,10 +113,10 @@ const VolunteerHistoryPopup: React.FC<Props> = ({ open, event, onClose, isCurren
 				</div>
 				<div className="vhp-details">
 					<div className="vhp-info-grid">
-						<div className="vhp-info-item">
-							<span className="vhp-label">Date & Time:</span>
-							<span>{event.time_label}</span>
-						</div>
+					<div className="vhp-info-item">
+						<span className="vhp-label">Date & Time:</span>
+						<span>{formatTimeLabel(event.time_label)}</span>
+					</div>
 						<div className="vhp-info-item">
 							<span className="vhp-label">Location:</span>
 							<span>{event.location}</span>

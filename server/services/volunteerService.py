@@ -25,7 +25,7 @@ class VolunteerService:
 				SELECT DISTINCT
 					e.id, 
 					e.name as eventName, 
-					e.time_label as date,
+					e.time_label as time_label,
 					e.location, 
 					e.description, 
 					e.urgency, 

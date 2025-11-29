@@ -35,12 +35,18 @@ class MatchingHelper:
     @staticmethod
     def calculate_score(volunteer, event):
         """Calculate match score between volunteer skills and event requirements"""
-        vol_skills = set(s.lower() for s in volunteer['skills'])
-        event_reqs = set(r.lower() for r in event['requirements'])
+        vol_skills = volunteer
+        event_reqs = event
         if not event_reqs:
             return 0
-        matching = vol_skills & event_reqs
-        return round((len(matching) / len(event_reqs)) * 100, 2)
+        
+        # Count matching skills
+        match_count = 0
+        for skill in vol_skills:
+            if skill in event_reqs:
+                match_count += 1
+        
+        return round((match_count / len(event_reqs)) * 100, 2)
     
     @staticmethod
     def count_volunteers(event_id):
@@ -74,9 +80,12 @@ class VolunteerService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT v.*, u.name
+                SELECT v.*, u.name, GROUP_CONCAT(DISTINCT s.name) as skills
                 FROM volunteers v
                 LEFT JOIN users u ON v.user_id = u.id
+                LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
+                LEFT JOIN skills s ON vs.skill_id = s.id
+                GROUP BY v.id
             """))
             volunteers = result.mappings().all()
         return jsonify([dict(v) for v in volunteers]), 200
@@ -87,10 +96,13 @@ class VolunteerService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT v.*, u.name
+                SELECT v.*, u.name, GROUP_CONCAT(DISTINCT s.name) as skills
                 FROM volunteers v
                 LEFT JOIN users u ON v.user_id = u.id
+                LEFT JOIN volunteer_skills vs ON v.id = vs.volunteer_id
+                LEFT JOIN skills s ON vs.skill_id = s.id
                 WHERE v.id = :vol_id
+                GROUP BY v.id
             """), {"vol_id": vol_id})
             volunteer = result.mappings().first()
         if not volunteer:
@@ -147,12 +159,16 @@ class EventService:
         with engine.connect() as conn:
             result = conn.execute(text("""
                 SELECT e.*, 
-                       COUNT(m.id) AS current_volunteers
+                       COUNT(DISTINCT m.id) AS current_volunteers,
+                       GROUP_CONCAT(DISTINCT s.name) AS skills
                 FROM events e
                 LEFT JOIN matches m ON e.id = m.event_id
+                LEFT JOIN event_requirements er ON e.id = er.event_id
+                LEFT JOIN skills s ON er.skill_id = s.id
                 GROUP BY e.id
             """))
         events = result.mappings().all()
+        
         return jsonify([dict(e) for e in events]), 200
     
     @staticmethod
@@ -161,9 +177,13 @@ class EventService:
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
             result = conn.execute(text("""
-                SELECT e.*, COUNT(m.id) AS current_volunteers
+                SELECT e.*, 
+                       COUNT(DISTINCT m.id) AS current_volunteers,
+                       GROUP_CONCAT(DISTINCT s.name) AS requirements
                 FROM events e
                 LEFT JOIN matches m ON e.id = m.event_id
+                LEFT JOIN event_requirements er ON e.id = er.event_id
+                LEFT JOIN skills s ON er.skill_id = s.id
             WHERE e.id = :event_id
             GROUP BY e.id
         """), {"event_id": event_id})
@@ -176,7 +196,7 @@ class MatchService:
     """Service for managing volunteer-event matches"""
     
     @staticmethod
-    def find_best_match(vol_id):
+    def find_best_match(vol_id, admin_id=None):
         """Find best matching event for a volunteer"""
         engine = current_app.config["ENGINE"]
         with engine.connect() as conn:
@@ -196,15 +216,22 @@ class MatchService:
             volunteer_skills = [row['name'].lower() for row in result.mappings().all()]
 
             # 3️⃣ Get events with required skills and open slots
-            result = conn.execute(text("""
+            query = """
                 SELECT e.*, GROUP_CONCAT(s.name) AS required_skills, COUNT(m.id) AS current_volunteers
                 FROM events e
                 LEFT JOIN event_requirements er ON e.id = er.event_id
                 LEFT JOIN skills s ON er.skill_id = s.id
                 LEFT JOIN matches m ON e.id = m.event_id
+            """
+            if admin_id:
+                query += " WHERE e.ownerid = :admin_id"
+            query += """
                 GROUP BY e.id
                 HAVING current_volunteers < e.max_volunteers
-            """))
+            """
+            
+            params = {"admin_id": admin_id} if admin_id else {}
+            result = conn.execute(text(query), params)
             events = result.mappings().all()
 
         best_event = None
@@ -222,8 +249,10 @@ class MatchService:
         if not best_event:
             return jsonify({'message': 'No matches found'}), 404
 
-        best_event['match_score'] = best_score
-        return jsonify({'event': best_event, 'score': best_score}), 200
+        # Convert RowMapping to dict and add match_score
+        best_event_dict = dict(best_event)
+        best_event_dict['match_score'] = best_score
+        return jsonify({'event': best_event_dict, 'score': best_score}), 200
     
     @staticmethod
     def create_match(vol_id, event_id, status='pending'):

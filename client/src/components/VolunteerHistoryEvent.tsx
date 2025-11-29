@@ -1,4 +1,5 @@
 import React from "react";
+import { formatTimeLabel } from "../utils/dateFormatters";
 import "./VolunteerHistoryEvent.css";
 
 export type Task = {
@@ -52,7 +53,7 @@ const VolunteerHistoryEvent: React.FC<Props> = ({ event, onClick }) => {
 
 			<div className="vhe-body">
 				<h4 className="vhe-title">{event.event_name}</h4>
-				<div className="vhe-time">{event.time_label}</div>
+				<div className="vhe-time">{formatTimeLabel(event.time_label)}</div>
 				<p className="vhe-desc">{truncate(event.description, 120)}</p>
 				<div className="vhe-score-bar">
 					<div className="vhe-score-progress" style={{ width: `${progress}%` }}></div>
